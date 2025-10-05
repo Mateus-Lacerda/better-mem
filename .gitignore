@@ -1,5 +1,5 @@
 #
-./target
+target/*
 
 # ===== python =====
 # Byte-compiled / optimized / DLL files
