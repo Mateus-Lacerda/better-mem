@@ -1,64 +1,64 @@
 # Better-Mem
 
-Sistema de gerenciamento de memórias para LLMs com classificação automática em memórias de curto e longo prazo.
+Memory management system for LLMs with automatic classification into short-term and long-term memories.
 
-## Estrutura do Projeto
+## Project Structure
 
-- `cmd/api` - API REST principal
-- `cmd/worker` - Worker para processamento assíncrono de mensagens
-- `cmd/demo` - Aplicação CLI de demonstração
-- `internal/` - Código interno da aplicação
-- `inference/` - Serviço de inferência ML (Python)
-- `demo/` - Pacote da aplicação demo
+- `cmd/api` - Main REST API
+- `cmd/worker` - Worker for asynchronous message processing
+- `cmd/demo` - CLI demonstration application
+- `internal/` - Internal application code
+- `inference/` - ML inference service (Python)
+- `demo/` - Demo application package
 
 ## Quick Start
 
-### 1. Iniciar os serviços
+### 1. Start services
 
 ```bash
 docker-compose up -d
 ```
 
-### 2. Build e executar a API
+### 2. Build and run the API
 
 ```bash
 ./scripts/build.sh
 ./target/api.o
 ```
 
-### 3. Build e executar o Worker
+### 3. Build and run the Worker
 
 ```bash
 ./scripts/build.sh
 ./target/worker.o
 ```
 
-### 4. Testar com a Demo CLI
+### 4. Test with CLI Demo
 
 ```bash
 ./demo/build_demo.sh
 ./demo/demo.o
 ```
 
-Veja mais detalhes em [demo/README.md](demo/README.md)
+See more details in [demo/README.md](demo/README.md)
 
-## Documentação da API
+## API Documentation
 
-Acesse a documentação Swagger em: http://localhost:8080/swagger/index.html
+Access Swagger documentation at: http://localhost:8080/swagger/index.html
 
-## Endpoints Principais
+## Main Endpoints
 
-- `POST /api/v1/chat` - Criar um novo chat
-- `POST /api/v1/message` - Enviar mensagem para processamento
-- `POST /api/v1/memory/chat/{chat_id}/fetch` - Buscar memórias relevantes
-- `GET /api/v1/memory/short-term/chat/{chat_id}` - Listar memórias de curto prazo
-- `GET /api/v1/memory/long-term/chat/{chat_id}` - Listar memórias de longo prazo
+- `POST /api/v1/chat` - Create a new chat
+- `POST /api/v1/message` - Send message for processing
+- `POST /api/v1/memory/chat/{chat_id}/fetch` - Fetch relevant memories
+- `GET /api/v1/memory/short-term/chat/{chat_id}` - List short-term memories
+- `GET /api/v1/memory/long-term/chat/{chat_id}` - List long-term memories
 
-## Tecnologias
+## Technologies
 
-- **Go** - API e Worker
-- **Python** - Serviço de inferência ML
-- **MongoDB** - Banco de dados principal
-- **Redis** - Fila de tarefas (Asynq)
-- **Qdrant** - Banco de dados vetorial
-- **gRPC** - Comunicação entre serviços
+- **Go** - API and Worker
+- **Python** - ML inference service
+- **MongoDB** - Main database
+- **Redis** - Task queue (Asynq)
+- **Qdrant** - Vector database
+- **gRPC** - Inter-service communication
