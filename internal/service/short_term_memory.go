@@ -1,0 +1,74 @@
+package service
+
+import (
+	"context"
+	"time"
+	"better-mem/internal/core"
+	"better-mem/internal/repository"
+)
+
+type ShortTermMemoryService struct {
+	repo repository.ShortTermMemoryRepository
+}
+
+func NewShortTermMemoryService(
+	repo repository.ShortTermMemoryRepository,
+) *ShortTermMemoryService {
+	return &ShortTermMemoryService{repo: repo}
+}
+
+func (s *ShortTermMemoryService) Create(
+	ctx context.Context,
+	text string,
+	chatId string,
+) (*core.ShortTermMemory, error) {
+	memory := &core.NewShortTermMemory{
+		Memory: text,
+		ChatId: chatId,
+		AccessCount: 0,
+		MergeCount: 0,
+		Merged: false,
+		CreatedAt: time.Now(),
+		Active: true,
+	}
+	return s.repo.Create(ctx, memory)
+}
+
+func (s *ShortTermMemoryService) GetByChatId(
+	ctx context.Context,
+	chatId string,
+	limit int,
+	offset int,
+) (*core.ShortTermMemoryArray, error) {
+	return s.repo.GetByChatId(ctx, chatId, limit, offset)
+}
+
+func (s *ShortTermMemoryService) GetById(
+	ctx context.Context, chatId string, memoryId string,
+) (*core.ShortTermMemory, error) {
+	return s.repo.GetById(ctx, chatId, memoryId)
+}
+
+func (s *ShortTermMemoryService) GetScored(
+	ctx context.Context, chatId string, memoriesIds []string,
+) ([]*core.ScoredMemory, error) {
+	return s.repo.GetScored(ctx, chatId, memoriesIds)
+}
+
+func (s *ShortTermMemoryService) RegisterUsage(
+	ctx context.Context, chatId string, memoryId string,
+) error {
+	return s.repo.RegisterUsage(ctx, chatId, memoryId)
+}
+
+func (s *ShortTermMemoryService) Merge(
+	ctx context.Context, chatId string, memoryId string, otherMemory string,
+) (*core.ShortTermMemory, error) {
+	return s.repo.Merge(ctx, chatId, memoryId, otherMemory)
+}
+
+func (s *ShortTermMemoryService) Deactivate(
+	ctx context.Context, chatId string, memoryId string,
+) error {
+	return s.repo.Deactivate(ctx, chatId, memoryId)
+}

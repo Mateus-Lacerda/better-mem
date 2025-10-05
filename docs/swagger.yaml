@@ -1,0 +1,292 @@
+definitions:
+  core.Chat:
+    properties:
+      external_id:
+        type: string
+    type: object
+  core.LongTermMemory:
+    properties:
+      access_count:
+        type: integer
+      active:
+        type: boolean
+      chat_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      memory:
+        type: string
+    type: object
+  core.MemoryFetchRequest:
+    properties:
+      limit:
+        description: 'Max number of memories to be returned (Default: 2)'
+        example: 2
+        type: integer
+      long_term_threshold:
+        description: 'Specific threshold for long term memories (Default: 0.8)'
+        example: 0.8
+        type: number
+      text:
+        description: Text to be searched
+        example: I love smart LLMs
+        type: string
+      vector_search_limit:
+        description: 'Max number of memories to be returned from vector search (Default:
+          10)'
+        example: 10
+        type: integer
+      vector_search_threshold:
+        description: 'Min score to considerate a memory (Default: 0.6)'
+        example: 0.6
+        type: number
+    type: object
+  core.MemoryTypeEnum:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - NoMemory
+    - ShortTerm
+    - LongTerm
+  core.NewMessage:
+    properties:
+      chat_id:
+        type: string
+      message:
+        type: string
+    type: object
+  core.NewShortTermMemory:
+    properties:
+      access_count:
+        type: integer
+      active:
+        type: boolean
+      chat_id:
+        type: string
+      created_at:
+        type: string
+      memory:
+        type: string
+      merge_count:
+        type: integer
+      merged:
+        type: boolean
+    type: object
+  core.ScoredMemory:
+    properties:
+      memoryType:
+        $ref: '#/definitions/core.MemoryTypeEnum'
+      score:
+        type: number
+      text:
+        type: string
+    type: object
+  core.ShortTermMemory:
+    properties:
+      embedded:
+        $ref: '#/definitions/core.NewShortTermMemory'
+      id:
+        type: string
+    type: object
+  v1.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /chat:
+    get:
+      consumes:
+      - application/json
+      description: Get all chats
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/core.Chat'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get all chats
+      tags:
+      - chat
+    post:
+      consumes:
+      - application/json
+      description: Create a new chat
+      parameters:
+      - description: chat
+        in: body
+        name: chat
+        required: true
+        schema:
+          $ref: '#/definitions/core.Chat'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/core.Chat'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a new chat
+      tags:
+      - chat
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the API is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: Health Check
+      tags:
+      - health
+  /memory/chat/{chat_id}/fetch:
+    post:
+      consumes:
+      - application/json
+      description: Fetch memories for a given chat.
+      parameters:
+      - description: Chat ID
+        in: path
+        name: chat_id
+        required: true
+        type: string
+      - description: Fetch Memories Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/core.MemoryFetchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/core.ScoredMemory'
+            type: array
+      summary: Fetch Memories
+      tags:
+      - memories
+  /memory/long-term/chat/{chat_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get long term memories for a given chat.
+      parameters:
+      - description: Chat ID
+        in: path
+        name: chat_id
+        required: true
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/core.LongTermMemory'
+            type: array
+      summary: Get Long Term Memories
+      tags:
+      - memories
+  /memory/short-term/chat/{chat_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get short term memories for a given chat.
+      parameters:
+      - description: Chat ID
+        in: path
+        name: chat_id
+        required: true
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/core.ShortTermMemory'
+            type: array
+      summary: Get Short Term Memories
+      tags:
+      - memories
+  /message:
+    post:
+      consumes:
+      - application/json
+      description: Sends a message to classification queue
+      parameters:
+      - description: Message
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/core.NewMessage'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/v1.MessageResponse'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Add message
+      tags:
+      - message
+swagger: "2.0"

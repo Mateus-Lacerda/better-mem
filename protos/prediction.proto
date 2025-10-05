@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "better-mem/internal/protos";
+
+service Prediction {
+  // Predicts the label of a given message.
+  rpc Predict (PredictionRequest) returns (PredictionResponse) {}
+  // Embeds a given message.
+  rpc Embed (EmbedRequest) returns (EmbedResponse) {}
+}
+
+message PredictionRequest {
+  string message = 1;
+  bool return_embedding = 2;
+}
+
+message PredictionResponse {
+  int32 label = 1;
+  repeated float embedding = 2;
+}
+
+message EmbedRequest {
+  string message = 1;
+}
+
+message EmbedResponse {
+  repeated float embedding = 1;
+}
