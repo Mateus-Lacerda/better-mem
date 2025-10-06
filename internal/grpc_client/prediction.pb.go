@@ -231,7 +231,7 @@ const file_prediction_proto_rawDesc = "" +
 	"\n" +
 	"Prediction\x124\n" +
 	"\aPredict\x12\x12.PredictionRequest\x1a\x13.PredictionResponse\"\x00\x12(\n" +
-	"\x05Embed\x12\r.EmbedRequest\x1a\x0e.EmbedResponse\"\x00B\x1bZ\x19better-mem/internal/protosb\x06proto3"
+	"\x05Embed\x12\r.EmbedRequest\x1a\x0e.EmbedResponse\"\x00B\x1cZ\x1abetter-mem/internal/protosb\x06proto3"
 
 var (
 	file_prediction_proto_rawDescOnce sync.Once
