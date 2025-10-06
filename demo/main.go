@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	configPath      = "bettermem_config.json"
-	chatHistoryPath = "chat_history.json"
+	configPath      = "data/bettermem_config.json"
+	chatHistoryPath = "data/chat_history.json"
 )
 
 func main() {
