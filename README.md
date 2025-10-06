@@ -23,14 +23,14 @@ docker-compose up -d
 
 ```bash
 ./scripts/build.sh
-./target/api.o
+./bin/api
 ```
 
 ### 3. Build and run the Worker
 
 ```bash
 ./scripts/build.sh
-./target/worker.o
+./bin/worker
 ```
 
 ### 4. Test with CLI Demo
