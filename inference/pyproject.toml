@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "grpcio>=1.75.0",
     "onnxruntime>=1.22.1",
     "pycapnp>=2.2.0",
     "tokenizers>=0.22.0",
@@ -13,4 +14,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "grpcio-tools>=1.75.0",
+    "psutil>=7.1.0",
 ]

@@ -12,7 +12,7 @@ type workerConfig struct {
 func newWorkerConfig() *workerConfig {
 	maxRetry := getInt("WORKER_MAX_RETRY", 5)
 	timeout := getInt("WORKER_TIMEOUT", 60)
-	concurrency := getInt("WORKER_CONCURRENCY", 20)
+	concurrency := getInt("WORKER_CONCURRENCY", 5)
 	return &workerConfig{
 		MaxRetry:    maxRetry,
 		Timeout:     timeout,

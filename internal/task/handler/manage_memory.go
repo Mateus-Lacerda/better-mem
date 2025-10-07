@@ -45,7 +45,7 @@ func (m *MemoryManagementHandler) ManageShortTermMemory(
 	deactivated, err := m.memoryManagementService.FindAndDeactivate(
 		ctx,
 		chatId,
-		config.MemoryManagement.STValConfig.AgeLimit,
+		config.MemoryManagement.STValConfig.AgeLimitHours,
 		config.MemoryManagement.STValConfig.MinimalRelevancyForDiscard,
 	)
 	if err != nil {

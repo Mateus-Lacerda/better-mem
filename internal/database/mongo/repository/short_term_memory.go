@@ -179,7 +179,6 @@ func (s ShortTermMemoryRepository) Merge(
 func (s ShortTermMemoryRepository) RegisterUsage(ctx context.Context, chatId string, memoryId string) error {
 	memory, err := s.GetById(ctx, chatId, memoryId)
 	if err != nil {
-		slog.Error("Error getting memory", "error", err)
 		return err
 	}
 	memory.AccessCount++

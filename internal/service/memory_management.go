@@ -1,11 +1,11 @@
 package service
 
 import (
-	"context"
-	"time"
 	"better-mem/internal/core"
 	"better-mem/internal/repository"
 	"better-mem/internal/uow"
+	"context"
+	"time"
 )
 
 
@@ -20,11 +20,11 @@ func NewMemoryManagementService(uow uow.UnitOfWork[int]) *MemoryManagementServic
 func (s *MemoryManagementService) FindAndDeactivate(
 	ctx context.Context,
 	chatId string,
-	ageLimit int,
+	ageLimitHours int,
 	minimalRelevance int,
 ) (int, error) {
 	return s.uow.Do(ctx, func(repos repository.AllRepositories) (int, error) {
-		endTimeWindow := time.Until(time.Now().Add(-time.Duration(ageLimit) * time.Hour))
+		endTimeWindow := time.Until(time.Now().Add(time.Duration(ageLimitHours) * time.Hour))
 		memories, err := repos.ShortTermMemory.GetElligibleForDeactivation(
 			ctx, chatId, endTimeWindow, minimalRelevance,
 		)

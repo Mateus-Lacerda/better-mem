@@ -7,8 +7,8 @@ import onnxruntime as ort
 from tokenizers import Tokenizer
 from numpy import ndarray, argmax, mean
 
-from multiprocessing import Pool
-from multiprocessing.pool import Pool as PoolType
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 _session = None
 _tokenizer = None
@@ -47,16 +47,37 @@ def start_embedder(
 
 
 
-def _init_worker(
-    model_path: str,
-    tokenizer_path: str,
-    embedder_model_path: str,
-    embedder_tokenizer_path: str,
-) -> None:
-    """Initialize both session and tokenizer in worker process."""
-    start_session(model_path)
-    start_tokenizer(tokenizer_path)
-    start_embedder(embedder_model_path, embedder_tokenizer_path)
+class InferencePool:
+    """Thread-based inference pool that works better with asyncio"""
+
+    def __init__(self, model_path: str, tokenizer_path: str,
+                 embedder_model_path: str, embedder_tokenizer_path: str,
+                 pool_size: int = 1):
+        self.pool_size = pool_size
+        self.executor = ThreadPoolExecutor(max_workers=pool_size)
+
+        # Initialize models in the main thread
+        start_session(model_path)
+        start_tokenizer(tokenizer_path)
+        start_embedder(embedder_model_path, embedder_tokenizer_path)
+
+        logger.info(
+            "Created inference pool with %d workers (model: %s, tokenizer: %s, embedder_model: %s, embedder_tokenizer: %s)",
+            pool_size, model_path, tokenizer_path, embedder_model_path, embedder_tokenizer_path
+        )
+
+    def apply(self, func, args):
+        """Apply function with args in thread pool"""
+        future = self.executor.submit(func, *args)
+        return future.result()
+
+    def close(self):
+        """Close the thread pool"""
+        self.executor.shutdown(wait=False)
+
+    def join(self):
+        """Wait for all threads to complete"""
+        self.executor.shutdown(wait=True)
 
 
 def create_inference_pool(
@@ -65,21 +86,13 @@ def create_inference_pool(
     embedder_model_path: str,
     embedder_tokenizer_path: str,
     pool_size: int = 1,
-) -> PoolType:
-    """Create a pool with both session and tokenizer initialized in each worker."""
-    initializer = partial(
-        _init_worker,
-        model_path,
-        tokenizer_path,
-        embedder_model_path,
-        embedder_tokenizer_path,
+) -> InferencePool:
+    """Create a thread-based inference pool."""
+    return InferencePool(
+        model_path, tokenizer_path,
+        embedder_model_path, embedder_tokenizer_path,
+        pool_size
     )
-    pool = Pool(pool_size, initializer=initializer)
-    logger.info(
-        "Created inference pool with %d workers (model: %s, tokenizer: %s, embedder_model: %s, embedder_tokenizer: %s)",
-        pool_size, model_path, tokenizer_path, embedder_model_path, embedder_tokenizer_path
-    )
-    return pool
 
 
 def _predict_in_worker(input_data: str) -> int:
@@ -173,14 +186,12 @@ def get_attention_mask(input_ids: Sequence, pad_token_id: int = 0) -> list:
 
 async def predict(
     input_data: str,
-    inference_pool: PoolType,
+    inference_pool: InferencePool,
 ) -> int:
-    """Run prediction using worker pool."""
+    """Run prediction using thread pool."""
     try:
-        # Use session_pool to run prediction in worker process
-        # (tokenizer_pool is not needed since both are initialized in same workers)
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, inference_pool.apply, _predict_in_worker, (input_data,))
+        result = await loop.run_in_executor(inference_pool.executor, _predict_in_worker, input_data)
         return result
     except Exception as e:
         logger.error(f"Error predicting: {e}")
@@ -189,14 +200,12 @@ async def predict(
 
 async def embed(
     input_data: str,
-    inference_pool: PoolType,
+    inference_pool: InferencePool,
 ) -> list:
-    """Run prediction using worker pool."""
+    """Run embedding using thread pool."""
     try:
-        # Use session_pool to run prediction in worker process
-        # (tokenizer_pool is not needed since both are initialized in same workers)
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, inference_pool.apply, _embed_in_worker, (input_data,))
+        result = await loop.run_in_executor(inference_pool.executor, _embed_in_worker, input_data)
         return result
     except Exception as e:
         logger.error(f"Error embedding: {e}")

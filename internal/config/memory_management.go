@@ -5,7 +5,7 @@ package config
 // (for promotion and for discard)
 type shortTermMemoryValidationConfig struct {
 	// The age limit in hours
-	AgeLimit int
+	AgeLimitHours int
 	// The minimal relevancy to be considered for long term memory
 	MinimalRelevancyForPromotion int
 	// The minimal relevancy to not be discarded
@@ -34,7 +34,7 @@ func newMemoryManagementConfig() *memoryManagementConfig {
 		MemorySimilarityThreshold: memorySimilarityThreshold,
 		MaxSimultaneousTasks:      maxSimultaneousTasks,
 		STValConfig: &shortTermMemoryValidationConfig{
-			AgeLimit:                     ageLimit,
+			AgeLimitHours:                     ageLimit,
 			MinimalRelevancyForPromotion: minimalRelevancyForPromotion,
 			MinimalRelevancyForDiscard:   minimalRelevancyForDiscard,
 			LongTermThreshold:            longTermThreshold,
