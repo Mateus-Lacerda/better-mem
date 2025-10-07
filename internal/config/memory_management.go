@@ -15,10 +15,10 @@ type shortTermMemoryValidationConfig struct {
 }
 
 type memoryManagementConfig struct {
-	ManageSTMemoryTaskPeriod string  // = "@every 30s"
-	MemorySimilarityThreshold       float32 // = 0.9
-	MaxSimultaneousTasks            int
-	STValConfig *shortTermMemoryValidationConfig
+	ManageSTMemoryTaskPeriod  string  // = "@every 30s"
+	MemorySimilarityThreshold float32 // = 0.9
+	MaxSimultaneousTasks      int
+	STValConfig               *shortTermMemoryValidationConfig
 }
 
 func newMemoryManagementConfig() *memoryManagementConfig {
@@ -30,9 +30,9 @@ func newMemoryManagementConfig() *memoryManagementConfig {
 	minimalRelevancyForDiscard := getInt("MEMORY_MANAGEMENT_SHORT_TERM_MEMORY_MINIMAL_RELEVANCY_FOR_DISCARD", 5)
 	longTermThreshold := getFloat32("MEMORY_MANAGEMENT_SHORT_TERM_MEMORY_LONG_TERM_THRESHOLD", 0.5)
 	return &memoryManagementConfig{
-		ManageSTMemoryTaskPeriod: manageShortTermMemoryTaskPeriod,
-		MemorySimilarityThreshold:       memorySimilarityThreshold,
-		MaxSimultaneousTasks:            maxSimultaneousTasks,
+		ManageSTMemoryTaskPeriod:  manageShortTermMemoryTaskPeriod,
+		MemorySimilarityThreshold: memorySimilarityThreshold,
+		MaxSimultaneousTasks:      maxSimultaneousTasks,
 		STValConfig: &shortTermMemoryValidationConfig{
 			AgeLimit:                     ageLimit,
 			MinimalRelevancyForPromotion: minimalRelevancyForPromotion,
@@ -42,4 +42,4 @@ func newMemoryManagementConfig() *memoryManagementConfig {
 	}
 }
 
-var MemoryManagementConfig = newMemoryManagementConfig()
+var MemoryManagement = newMemoryManagementConfig()

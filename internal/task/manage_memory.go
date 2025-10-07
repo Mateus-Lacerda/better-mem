@@ -16,7 +16,7 @@ func NewManageShortTermMemoryTask() *asynq.Task {
 	return asynq.NewTask(
 		ManageMemoryTaskName,
 		nil,
-		asynq.MaxRetry(config.WorkerConfig.MaxRetry),
-		asynq.Timeout(time.Duration(config.WorkerConfig.Timeout)*time.Second),
+		asynq.MaxRetry(config.Worker.MaxRetry),
+		asynq.Timeout(time.Duration(config.Worker.Timeout)*time.Second),
 	)
 }

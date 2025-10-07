@@ -1,12 +1,12 @@
 package repository
 
 import (
-	"context"
-	"log/slog"
-	"time"
 	"better-mem/internal/core"
 	"better-mem/internal/database/mongo"
 	"better-mem/internal/repository"
+	"context"
+	"log/slog"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -35,17 +35,25 @@ func (l *LongTermMemoryRepository) Create(ctx context.Context, memory *core.NewL
 		return nil, err
 	}
 	createdMemory := &core.LongTermMemory{
-		Id:                res.InsertedID.(primitive.ObjectID).Hex(),
-		NewLongTermMemory: *memory,
+		Id:          res.InsertedID.(primitive.ObjectID).Hex(),
+		Memory:      memory.Memory,
+		ChatId:      memory.ChatId,
+		AccessCount: memory.AccessCount,
+		CreatedAt:   memory.CreatedAt,
+		Active:      memory.Active,
 	}
 	return createdMemory, nil
 }
 
 // Deactivate implements repository.LongTermMemoryRepository.
 func (l *LongTermMemoryRepository) Deactivate(ctx context.Context, chatId string, memoryId string) error {
-	filter := bson.M{"chatid": chatId, "_id": memoryId}
+	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
+	if err != nil {
+		return err
+	}
+	filter := bson.M{"chatid": chatId, "_id": memoryIdObjectId}
 	update := bson.M{"$set": bson.M{"active": false}}
-	_, err := l.UpdateOne(ctx, filter, update)
+	_, err = l.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -77,13 +85,17 @@ func (l *LongTermMemoryRepository) GetByChatId(ctx context.Context, chatId strin
 
 // GetById implements repository.LongTermMemoryRepository.
 func (l *LongTermMemoryRepository) GetById(ctx context.Context, chatId string, memoryId string) (*core.LongTermMemory, error) {
-	filter := bson.M{"_id": memoryId, "chat_id": chatId}
+	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{"_id": memoryIdObjectId, "chatid": chatId}
 	result := l.FindOne(ctx, filter)
 	if result.Err() != nil {
 		return nil, result.Err()
 	}
 	var memory core.LongTermMemory
-	err := result.Decode(&memory)
+	err = result.Decode(&memory)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +121,8 @@ func (l *LongTermMemoryRepository) GetScored(
 	}
 	filter := bson.M{
 		"chatid": chatId,
-		"_id":     bson.M{"$in": objectIds},
-		"active":  true,
+		"_id":    bson.M{"$in": objectIds},
+		"active": true,
 	}
 	cursor, err := l.Find(ctx, filter)
 	if err != nil {
@@ -144,8 +156,8 @@ func (l *LongTermMemoryRepository) GetScored(
 		}
 		scoredMemories = append(
 			scoredMemories, &core.ScoredMemory{
-				Text:  memory.Memory,
-				Score: score,
+				Text:       memory.Memory,
+				Score:      score,
 				MemoryType: core.LongTerm,
 			},
 		)
@@ -161,8 +173,12 @@ func (l *LongTermMemoryRepository) RegisterUsage(ctx context.Context, chatId str
 		return err
 	}
 	memory.AccessCount++
-	filter := bson.M{"_id": memory.Id}
-	update := bson.M{"$set": bson.M{"access_count": memory.AccessCount}}
+	memoryIdObjectId, err := primitive.ObjectIDFromHex(memory.Id)
+	if err != nil {
+		return err
+	}
+	filter := bson.M{"_id": memoryIdObjectId}
+	update := bson.M{"$set": bson.M{"accesscount": memory.AccessCount}}
 	_, err = l.UpdateOne(ctx, filter, update)
 	return err
 }

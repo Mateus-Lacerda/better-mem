@@ -20,4 +20,4 @@ func newWorkerConfig() *workerConfig {
 	}
 }
 
-var WorkerConfig = newWorkerConfig()
+var Worker = newWorkerConfig()

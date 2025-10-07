@@ -1,11 +1,12 @@
 package repository
 
 import (
-	"context"
-	"time"
 	"better-mem/internal/core"
 	"better-mem/internal/database/mongo"
 	"better-mem/internal/repository"
+	"context"
+	"log/slog"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -34,23 +35,33 @@ func (s ShortTermMemoryRepository) Create(ctx context.Context, memory *core.NewS
 		return nil, err
 	}
 	createdMemory := &core.ShortTermMemory{
-		Id:                 res.InsertedID.(primitive.ObjectID).Hex(),
-		NewShortTermMemory: *memory,
+		Id:          res.InsertedID.(primitive.ObjectID).Hex(),
+		Memory:      memory.Memory,
+		ChatId:      memory.ChatId,
+		AccessCount: memory.AccessCount,
+		MergeCount:  memory.MergeCount,
+		Merged:      memory.Merged,
+		CreatedAt:   memory.CreatedAt,
+		Active:      memory.Active,
 	}
 	return createdMemory, nil
 }
 
 // Deactivate implements repository.ShortTermMemoryRepository.
 func (s ShortTermMemoryRepository) Deactivate(ctx context.Context, chatId string, memoryId string) error {
-	filter := bson.M{"_id": memoryId, "chat_id": chatId}
+	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
+	if err != nil {
+		return err
+	}
+	filter := bson.M{"_id": memoryIdObjectId, "chatid": chatId}
 	update := bson.M{"$set": bson.M{"active": false}}
-	_, err := s.UpdateOne(ctx, filter, update)
+	_, err = s.UpdateOne(ctx, filter, update)
 	return err
 }
 
 // GetByChatId implements repository.ShortTermMemoryRepository.
 func (s ShortTermMemoryRepository) GetByChatId(ctx context.Context, chatId string, limit int, offset int) (*core.ShortTermMemoryArray, error) {
-	filter := bson.M{"chat_id": chatId, "active": true}
+	filter := bson.M{"chatid": chatId, "active": true}
 	cursor, err := s.Find(
 		ctx,
 		filter,
@@ -73,13 +84,17 @@ func (s ShortTermMemoryRepository) GetByChatId(ctx context.Context, chatId strin
 
 // GetById implements repository.ShortTermMemoryRepository.
 func (s ShortTermMemoryRepository) GetById(ctx context.Context, chatId string, memoryId string) (*core.ShortTermMemory, error) {
-	filter := bson.M{"_id": memoryId, "chat_id": chatId}
+	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{"_id": memoryIdObjectId, "chatid": chatId}
 	result := s.FindOne(ctx, filter)
 	if result.Err() != nil {
 		return nil, result.Err()
 	}
 	var memory core.ShortTermMemory
-	err := result.Decode(&memory)
+	err = result.Decode(&memory)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +165,8 @@ func (s ShortTermMemoryRepository) Merge(
 	}
 	oldMemory.Memory = otherMemory
 	oldMemory.MergeCount++
-	filter := bson.M{"_id": memoryId}
+	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
+	filter := bson.M{"_id": memoryIdObjectId}
 	update := bson.M{"$set": oldMemory}
 	_, err = s.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -163,11 +179,17 @@ func (s ShortTermMemoryRepository) Merge(
 func (s ShortTermMemoryRepository) RegisterUsage(ctx context.Context, chatId string, memoryId string) error {
 	memory, err := s.GetById(ctx, chatId, memoryId)
 	if err != nil {
+		slog.Error("Error getting memory", "error", err)
 		return err
 	}
 	memory.AccessCount++
-	filter := bson.M{"_id": memory.Id}
-	update := bson.M{"$set": bson.M{"access_count": memory.AccessCount}}
+	slog.Info("Memory accessed", "memory", memory)
+	memoryIdObjectId, err := primitive.ObjectIDFromHex(memory.Id)
+	if err != nil {
+		return err
+	}
+	filter := bson.M{"_id": memoryIdObjectId}
+	update := bson.M{"$set": bson.M{"accesscount": memory.AccessCount}}
 	_, err = s.UpdateOne(ctx, filter, update)
 	return err
 }
@@ -180,14 +202,14 @@ func (s ShortTermMemoryRepository) GetElligibleForDeactivation(
 	minimalRelevance int,
 ) ([]*core.ShortTermMemory, error) {
 	filter := bson.M{
-		"chat_id": chatId,
-		"active":  true,
-		"created_at": bson.M{
+		"chatid": chatId,
+		"active": true,
+		"createdat": bson.M{
 			"$lt": time.Now().Add(-window),
 		},
 		"$expr": bson.M{
 			"$lt": []any{
-				bson.M{"$add": []any{"$access_count", "$merge_count"}},
+				bson.M{"$add": []any{"$accesscount", "$mergecount"}},
 				minimalRelevance,
 			},
 		},
@@ -209,11 +231,11 @@ func (s ShortTermMemoryRepository) GetElligibleForPromotion(
 	ctx context.Context, chatId string, minimalRelevance int,
 ) ([]*core.ShortTermMemory, error) {
 	filter := bson.M{
-		"chat_id": chatId,
-		"active":  true,
+		"chatid": chatId,
+		"active": true,
 		"$expr": bson.M{
 			"$gte": []any{
-				bson.M{"$add": []any{"$access_count", "$merge_count"}},
+				bson.M{"$add": []any{"$accesscount", "$mergecount"}},
 				minimalRelevance,
 			},
 		},
@@ -230,5 +252,4 @@ func (s ShortTermMemoryRepository) GetElligibleForPromotion(
 	return memories, nil
 }
 
-// var _ repository.ChatRepository = (*ChatRepository)(nil)
 var _ repository.ShortTermMemoryRepository = (*ShortTermMemoryRepository)(nil)

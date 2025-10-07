@@ -1,11 +1,12 @@
 package protos
 
 import (
+	"better-mem/internal/config"
+	"better-mem/internal/core"
 	"context"
 	"log/slog"
 	"sync"
 	"time"
-	"better-mem/internal/core"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -17,7 +18,6 @@ type PredictClient struct {
 }
 
 var (
-	addr = "inference:50051"
 	lock = &sync.Mutex{}
 	client *PredictClient
 )
@@ -33,7 +33,7 @@ func GetPredictClient() *PredictClient {
 		defer lock.Unlock()
 		if client == nil {
 			grpcClient, err := grpc.NewClient(
-				addr,
+				config.General.InferenceAddress,
 				grpc.WithTransportCredentials(
 					insecure.NewCredentials(),
 				),

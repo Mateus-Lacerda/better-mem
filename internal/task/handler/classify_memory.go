@@ -42,7 +42,7 @@ func (h *MessageTaskHandler) checkForSimilarMemory(
 		chatId,
 		tokens,
 		1,
-		config.MemoryManagementConfig.MemorySimilarityThreshold,
+		config.MemoryManagement.MemorySimilarityThreshold,
 	)
 	if similarMemory == nil {
 		return nil, nil

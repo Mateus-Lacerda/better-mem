@@ -49,6 +49,8 @@ services:
   inference:
     build:
       context: ./inference
+    ports:
+      - "50051:50051"
     restart: unless-stopped
 
   mongodb:

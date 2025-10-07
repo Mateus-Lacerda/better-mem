@@ -28,7 +28,7 @@ func NewMemoryManagementHandler(
 		memoryManagementService: memoryManagementService,
 		completed: make(
 			chan core.MemoryManagementResult,
-			config.MemoryManagementConfig.MaxSimultaneousTasks,
+			config.MemoryManagement.MaxSimultaneousTasks,
 		),
 		wgCompleted: sync.WaitGroup{},
 	}
@@ -45,8 +45,8 @@ func (m *MemoryManagementHandler) ManageShortTermMemory(
 	deactivated, err := m.memoryManagementService.FindAndDeactivate(
 		ctx,
 		chatId,
-		config.MemoryManagementConfig.STValConfig.AgeLimit,
-		config.MemoryManagementConfig.STValConfig.MinimalRelevancyForDiscard,
+		config.MemoryManagement.STValConfig.AgeLimit,
+		config.MemoryManagement.STValConfig.MinimalRelevancyForDiscard,
 	)
 	if err != nil {
 		slog.Error("error deactivating short term memories", "error", err)
@@ -55,8 +55,8 @@ func (m *MemoryManagementHandler) ManageShortTermMemory(
 	promoted, err = m.memoryManagementService.FindAndPromote(
 		ctx,
 		chatId,
-		config.MemoryManagementConfig.STValConfig.MinimalRelevancyForPromotion,
-		config.MemoryManagementConfig.STValConfig.LongTermThreshold,
+		config.MemoryManagement.STValConfig.MinimalRelevancyForPromotion,
+		config.MemoryManagement.STValConfig.LongTermThreshold,
 	)
 	m.completed <- core.MemoryManagementResult{
 		ChatId:    chatId,
@@ -82,7 +82,7 @@ func (m *MemoryManagementHandler) HandleManageMemory(
 
 	var wgWorkers sync.WaitGroup
 
-	for range config.MemoryManagementConfig.MaxSimultaneousTasks {
+	for range config.MemoryManagement.MaxSimultaneousTasks {
 		wgWorkers.Go(func() {
 			for chatId := range jobs {
 				m.ManageShortTermMemory(ctx, chatId)

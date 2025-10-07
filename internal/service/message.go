@@ -9,7 +9,7 @@ import (
 )
 
 func AddMessage(chatId, message string) error {
-	client := asynq.NewClient(asynq.RedisClientOpt{Addr: config.DatabaseConfig.RedisAddress})
+	client := asynq.NewClient(asynq.RedisClientOpt{Addr: config.Database.RedisAddress})
 
 	defer client.Close()
 

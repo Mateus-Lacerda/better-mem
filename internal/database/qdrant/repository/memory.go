@@ -1,11 +1,12 @@
 package repository
 
 import (
-	"context"
-	"log/slog"
+	"better-mem/internal/config"
 	"better-mem/internal/core"
 	"better-mem/internal/database/qdrant"
 	"better-mem/internal/repository/vector"
+	"context"
+	"log/slog"
 
 	"github.com/google/uuid"
 	qdrantClient "github.com/qdrant/go-client/qdrant"
@@ -52,7 +53,7 @@ func (m *MemoryRepository) Create(
 		Payload: payloadValueMap,
 	}}
 	request := qdrantClient.UpsertPoints{
-		CollectionName: qdrant.DefaultCollectionName,
+		CollectionName: config.Database.DefaultCollectionName,
 		Points:         points,
 	}
 	info, err := m.Client.Upsert(ctx, &request)
@@ -76,7 +77,7 @@ func (m *MemoryRepository) Search(
 	}
 	query := qdrantClient.NewQuery(vector...)
 	request := qdrantClient.QueryPoints{
-		CollectionName: qdrant.DefaultCollectionName,
+		CollectionName: config.Database.DefaultCollectionName,
 		Query:          query,
 		Filter:         &filter,
 		ScoreThreshold: &threshold,
@@ -132,7 +133,7 @@ func (m *MemoryRepository) Deactivate(ctx context.Context, chatId string, id str
 		},
 	}
 	request := qdrantClient.SetPayloadPoints{
-		CollectionName: qdrant.DefaultCollectionName,
+		CollectionName: config.Database.DefaultCollectionName,
 		Payload: map[string]*qdrantClient.Value{
 			"active": qdrantClient.NewValueBool(false),
 		},

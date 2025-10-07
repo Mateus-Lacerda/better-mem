@@ -1,6 +1,7 @@
 package qdrant
 
 import (
+	"better-mem/internal/config"
 	"context"
 	"log/slog"
 	"sync"
@@ -12,13 +13,6 @@ type QdrantClient struct {
 	*qdrant.Client
 }
 
-const (
-	qdrantHost     string = "qdrant"
-	qdrantPort     int    = 6334
-	defaultVectorSize uint64  = 384
-	DefaultCollectionName string = "better-mem-default"
-)
-
 var (
 	once sync.Once
 	qdrantClient *QdrantClient
@@ -29,8 +23,8 @@ func GetQdrantClient() *QdrantClient {
 	// TODO: Use dependency injection instead of singleton
 	once.Do(func() {
 		client, err := qdrant.NewClient(&qdrant.Config{
-			Host:     qdrantHost,
-			Port:     qdrantPort,
+			Host:     config.Database.QdrantHost,
+			Port:     config.Database.QdrantPort,
 			UseTLS:   false,
 		})
 		if err != nil {
@@ -51,7 +45,7 @@ func collectionExists(
 	client *QdrantClient,
 ) (bool, error) {
 	existsRequests := qdrant.CollectionExistsRequest{
-		CollectionName: DefaultCollectionName,
+		CollectionName: config.Database.DefaultCollectionName,
 	}
 	existsResponse, err := client.GetCollectionsClient().CollectionExists(
 		ctx,
@@ -66,7 +60,7 @@ func createCollection(
 	client *QdrantClient,
 ) error {
 	vectorsConfig := qdrant.NewVectorsConfig(&qdrant.VectorParams{
-		Size:     defaultVectorSize,
+		Size:     config.Database.DefaultVectorSize,
 		Distance: qdrant.Distance_Cosine,
 	})
 	createRequests := qdrant.CreateCollection{

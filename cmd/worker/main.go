@@ -28,12 +28,12 @@ var queues = map[string]int{
 
 func startScheduler() {
 	scheduler := asynq.NewScheduler(
-		asynq.RedisClientOpt{Addr: config.DatabaseConfig.RedisAddress},
+		asynq.RedisClientOpt{Addr: config.Database.RedisAddress},
 		nil,
 	)
 
 	scheduler.Register(
-		config.MemoryManagementConfig.ManageSTMemoryTaskPeriod,
+		config.MemoryManagement.ManageSTMemoryTaskPeriod,
 		task.NewManageShortTermMemoryTask(),
 	)
 	if err := scheduler.Run(); err != nil {
@@ -44,9 +44,9 @@ func startScheduler() {
 
 func startServer() {
 	server := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: config.DatabaseConfig.RedisAddress},
+		asynq.RedisClientOpt{Addr: config.Database.RedisAddress},
 		asynq.Config{
-			Concurrency: config.WorkerConfig.Concurrency,
+			Concurrency: config.Worker.Concurrency,
 			Queues:      queues,
 		},
 	)

@@ -1,10 +1,10 @@
 package repository
 
 import (
+	"better-mem/internal/core"
 	"context"
 	"fmt"
 	"time"
-	"better-mem/internal/core"
 )
 
 type ShortTermMemoryRepository interface {
@@ -37,8 +37,14 @@ func NewMockShortTermMemoryRepository() *MockShortTermMemoryRepository {
 func (m *MockShortTermMemoryRepository) Create(ctx context.Context, memory *core.NewShortTermMemory) (*core.ShortTermMemory, error) {
 	id := len(m.ShortTermMemories) + 1
 	m.ShortTermMemories = append(m.ShortTermMemories, &core.ShortTermMemory{
-		Id:                 fmt.Sprintf("%d", id),
-		NewShortTermMemory: *memory,
+		Id: fmt.Sprintf("%d", id),
+		Memory:      memory.Memory,
+		ChatId:      memory.ChatId,
+		AccessCount: memory.AccessCount,
+		MergeCount:  memory.MergeCount,
+		Merged:      memory.Merged,
+		CreatedAt:   memory.CreatedAt,
+		Active:      memory.Active,
 	})
 	return m.ShortTermMemories[len(m.ShortTermMemories)-1], nil
 }

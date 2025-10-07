@@ -3,6 +3,8 @@ bin/*
 
 demo/data
 
+tmp/**
+
 # ===== python =====
 # Byte-compiled / optimized / DLL files
 **/__pycache__/**

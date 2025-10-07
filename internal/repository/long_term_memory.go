@@ -1,9 +1,9 @@
 package repository
 
 import (
+	"better-mem/internal/core"
 	"context"
 	"fmt"
-	"better-mem/internal/core"
 )
 
 type LongTermMemoryRepository interface {
@@ -34,7 +34,11 @@ func (m *MockLongTermMemoryRepository) Create(ctx context.Context, memory *core.
 	id := len(m.LongTermMemories) + 1
 	m.LongTermMemories = append(m.LongTermMemories, &core.LongTermMemory{
 		Id:          fmt.Sprintf("%d", id),
-		NewLongTermMemory: *memory,
+		Memory:      memory.Memory,
+		ChatId:      memory.ChatId,
+		AccessCount: memory.AccessCount,
+		CreatedAt:   memory.CreatedAt,
+		Active:      memory.Active,
 	})
 	return m.LongTermMemories[len(m.LongTermMemories)-1], nil
 }

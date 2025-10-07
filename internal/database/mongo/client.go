@@ -25,9 +25,9 @@ func GetMongoClient() *MongoClient {
 		lock.Lock()
 		defer lock.Unlock()
 		options := options.Client().
-			ApplyURI(config.DatabaseConfig.MongoUri).
+			ApplyURI(config.Database.MongoUri).
 			SetConnectTimeout(
-				time.Duration(config.DatabaseConfig.MongoTimeout) * time.Second,
+				time.Duration(config.Database.MongoTimeout) * time.Second,
 			)
 		ctx := context.Background()
 		client, err := mongo.Connect(ctx, options)
@@ -45,7 +45,7 @@ func GetMongoClient() *MongoClient {
 }
 
 func GetMongoDatabase() *mongo.Database {
-	return GetMongoClient().Database(config.DatabaseConfig.MongoDatabase)
+	return GetMongoClient().Database(config.Database.MongoDatabase)
 }
 
 func SetupMongo() error {

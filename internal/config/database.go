@@ -32,4 +32,4 @@ func newDatabaseConfig() databaseConfig {
 	}
 }
 
-var DatabaseConfig = newDatabaseConfig()
+var Database = newDatabaseConfig()

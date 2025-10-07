@@ -41,8 +41,8 @@ func NewClassifyMessageTask(
 	return asynq.NewTask(
 		ClassifyMessageTaskName,
 		payload,
-		asynq.MaxRetry(config.WorkerConfig.MaxRetry),
-		asynq.Timeout(time.Duration(config.WorkerConfig.Timeout)*time.Second),
+		asynq.MaxRetry(config.Worker.MaxRetry),
+		asynq.Timeout(time.Duration(config.Worker.Timeout)*time.Second),
 	), nil
 }
 
@@ -67,8 +67,8 @@ func NewStoreLongTermMemoryTask(
 	return asynq.NewTask(
 		StoreLongTermMemoryTaskName,
 		payload,
-		asynq.MaxRetry(config.WorkerConfig.MaxRetry),
-		asynq.Timeout(time.Duration(config.WorkerConfig.Timeout)*time.Second),
+		asynq.MaxRetry(config.Worker.MaxRetry),
+		asynq.Timeout(time.Duration(config.Worker.Timeout)*time.Second),
 	), nil
 }
 
@@ -93,7 +93,7 @@ func NewStoreShortTermMemoryTask(
 	return asynq.NewTask(
 		StoreShortTermMemoryTaskName,
 		payload,
-		asynq.MaxRetry(config.WorkerConfig.MaxRetry),
-		asynq.Timeout(time.Duration(config.WorkerConfig.Timeout)*time.Second),
+		asynq.MaxRetry(config.Worker.MaxRetry),
+		asynq.Timeout(time.Duration(config.Worker.Timeout)*time.Second),
 	), nil
 }
