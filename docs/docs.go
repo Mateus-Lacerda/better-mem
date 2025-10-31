@@ -344,7 +344,7 @@ const docTemplate = `{
                 "long_term_threshold": {
                     "description": "Specific threshold for long term memories (Default: 0.8)",
                     "type": "number",
-                    "example": 0.8
+                    "example": 0.6
                 },
                 "text": {
                     "description": "Text to be searched",
@@ -359,7 +359,7 @@ const docTemplate = `{
                 "vector_search_threshold": {
                     "description": "Min score to considerate a memory (Default: 0.6)",
                     "type": "number",
-                    "example": 0.6
+                    "example": 0.4
                 }
             }
         },
@@ -387,32 +387,6 @@ const docTemplate = `{
                 }
             }
         },
-        "core.NewShortTermMemory": {
-            "type": "object",
-            "properties": {
-                "access_count": {
-                    "type": "integer"
-                },
-                "active": {
-                    "type": "boolean"
-                },
-                "chat_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "memory": {
-                    "type": "string"
-                },
-                "merge_count": {
-                    "type": "integer"
-                },
-                "merged": {
-                    "type": "boolean"
-                }
-            }
-        },
         "core.ScoredMemory": {
             "type": "object",
             "properties": {
@@ -430,11 +404,29 @@ const docTemplate = `{
         "core.ShortTermMemory": {
             "type": "object",
             "properties": {
-                "embedded": {
-                    "$ref": "#/definitions/core.NewShortTermMemory"
+                "access_count": {
+                    "type": "integer"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "chat_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
+                },
+                "memory": {
+                    "type": "string"
+                },
+                "merge_count": {
+                    "type": "integer"
+                },
+                "merged": {
+                    "type": "boolean"
                 }
             }
         },

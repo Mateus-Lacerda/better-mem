@@ -27,7 +27,7 @@ definitions:
         type: integer
       long_term_threshold:
         description: 'Specific threshold for long term memories (Default: 0.8)'
-        example: 0.8
+        example: 0.6
         type: number
       text:
         description: Text to be searched
@@ -40,7 +40,7 @@ definitions:
         type: integer
       vector_search_threshold:
         description: 'Min score to considerate a memory (Default: 0.6)'
-        example: 0.6
+        example: 0.4
         type: number
     type: object
   core.MemoryTypeEnum:
@@ -60,23 +60,6 @@ definitions:
       message:
         type: string
     type: object
-  core.NewShortTermMemory:
-    properties:
-      access_count:
-        type: integer
-      active:
-        type: boolean
-      chat_id:
-        type: string
-      created_at:
-        type: string
-      memory:
-        type: string
-      merge_count:
-        type: integer
-      merged:
-        type: boolean
-    type: object
   core.ScoredMemory:
     properties:
       memoryType:
@@ -88,10 +71,22 @@ definitions:
     type: object
   core.ShortTermMemory:
     properties:
-      embedded:
-        $ref: '#/definitions/core.NewShortTermMemory'
+      access_count:
+        type: integer
+      active:
+        type: boolean
+      chat_id:
+        type: string
+      created_at:
+        type: string
       id:
         type: string
+      memory:
+        type: string
+      merge_count:
+        type: integer
+      merged:
+        type: boolean
     type: object
   v1.MessageResponse:
     properties:
