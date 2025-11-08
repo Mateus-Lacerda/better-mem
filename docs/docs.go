@@ -9,7 +9,10 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Mateus Lacerda",
+            "email": "mateuslacerda253@gmail.com"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -330,6 +333,12 @@ const docTemplate = `{
                 },
                 "memory": {
                     "type": "string"
+                },
+                "related_context": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.MessageRelatedContext"
+                    }
                 }
             }
         },
@@ -376,27 +385,67 @@ const docTemplate = `{
                 "LongTerm"
             ]
         },
+        "core.MessageRelatedContext": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "description": "The text that was used to generate the memory",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "User that generated the context, might be a name\nor simply \"user and assistant\"",
+                    "type": "string"
+                }
+            }
+        },
         "core.NewMessage": {
             "type": "object",
             "properties": {
                 "chat_id": {
+                    "description": "The chat id that the message belongs to",
                     "type": "string"
                 },
                 "message": {
+                    "description": "The message text",
                     "type": "string"
+                },
+                "related_context": {
+                    "description": "The related context",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.MessageRelatedContext"
+                    }
                 }
             }
         },
         "core.ScoredMemory": {
             "type": "object",
             "properties": {
-                "memoryType": {
-                    "$ref": "#/definitions/core.MemoryTypeEnum"
+                "created_at": {
+                    "description": "The date the memory was created",
+                    "type": "string"
+                },
+                "memory_type": {
+                    "description": "The type of the memory",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/core.MemoryTypeEnum"
+                        }
+                    ]
+                },
+                "related_context": {
+                    "description": "Context that might be related to the memory",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.MessageRelatedContext"
+                    }
                 },
                 "score": {
+                    "description": "The score of the memory",
                     "type": "number"
                 },
                 "text": {
+                    "description": "The text that was used to generate the memory",
                     "type": "string"
                 }
             }
@@ -427,6 +476,12 @@ const docTemplate = `{
                 },
                 "merged": {
                     "type": "boolean"
+                },
+                "related_context": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core.MessageRelatedContext"
+                    }
                 }
             }
         },
@@ -443,12 +498,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Better Mem API",
+	Description:      "This is the API for the Better Mem project.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

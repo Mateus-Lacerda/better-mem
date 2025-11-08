@@ -18,6 +18,10 @@ definitions:
         type: string
       memory:
         type: string
+      related_context:
+        items:
+          $ref: '#/definitions/core.MessageRelatedContext'
+        type: array
     type: object
   core.MemoryFetchRequest:
     properties:
@@ -53,20 +57,50 @@ definitions:
     - NoMemory
     - ShortTerm
     - LongTerm
+  core.MessageRelatedContext:
+    properties:
+      context:
+        description: The text that was used to generate the memory
+        type: string
+      user:
+        description: |-
+          User that generated the context, might be a name
+          or simply "user and assistant"
+        type: string
+    type: object
   core.NewMessage:
     properties:
       chat_id:
+        description: The chat id that the message belongs to
         type: string
       message:
+        description: The message text
         type: string
+      related_context:
+        description: The related context
+        items:
+          $ref: '#/definitions/core.MessageRelatedContext'
+        type: array
     type: object
   core.ScoredMemory:
     properties:
-      memoryType:
-        $ref: '#/definitions/core.MemoryTypeEnum'
+      created_at:
+        description: The date the memory was created
+        type: string
+      memory_type:
+        allOf:
+        - $ref: '#/definitions/core.MemoryTypeEnum'
+        description: The type of the memory
+      related_context:
+        description: Context that might be related to the memory
+        items:
+          $ref: '#/definitions/core.MessageRelatedContext'
+        type: array
       score:
+        description: The score of the memory
         type: number
       text:
+        description: The text that was used to generate the memory
         type: string
     type: object
   core.ShortTermMemory:
@@ -87,6 +121,10 @@ definitions:
         type: integer
       merged:
         type: boolean
+      related_context:
+        items:
+          $ref: '#/definitions/core.MessageRelatedContext'
+        type: array
     type: object
   v1.MessageResponse:
     properties:
@@ -94,7 +132,12 @@ definitions:
         type: string
     type: object
 info:
-  contact: {}
+  contact:
+    email: mateuslacerda253@gmail.com
+    name: Mateus Lacerda
+  description: This is the API for the Better Mem project.
+  title: Better Mem API
+  version: "1.0"
 paths:
   /chat:
     get:
