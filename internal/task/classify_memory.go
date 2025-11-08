@@ -28,11 +28,11 @@ type StoreMemoryPayload struct {
 }
 
 func NewClassifyMessageTask(
-	chatId, message string,
+	chatId, message string, relatedContext []core.MessageRelatedContext,
 ) (*asynq.Task, error) {
 	payload, err := json.Marshal(
 		ClassifyMessagePayload{
-			core.NewMessage{ChatId: chatId, Message: message},
+			core.NewMessage{ChatId: chatId, Message: message, RelatedContext: relatedContext},
 		},
 	)
 	if err != nil {

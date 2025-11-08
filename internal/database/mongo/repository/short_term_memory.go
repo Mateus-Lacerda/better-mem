@@ -148,6 +148,8 @@ func (s ShortTermMemoryRepository) GetScored(
 			Score:      score,
 			Text:       memory.Memory,
 			MemoryType: core.ShortTerm,
+			CreatedAt:  memory.CreatedAt,
+			RelatedContext: memory.RelatedContext,
 		})
 	}
 	return memories, nil
@@ -155,7 +157,11 @@ func (s ShortTermMemoryRepository) GetScored(
 
 // Merge implements repository.ShortTermMemoryRepository.
 func (s ShortTermMemoryRepository) Merge(
-	ctx context.Context, chatId string, memoryId string, otherMemory string,
+	ctx context.Context,
+	chatId string,
+	memoryId string,
+	otherMemory string,
+	otherMemoryRelatedContext []core.MessageRelatedContext,
 ) (*core.ShortTermMemory, error) {
 	// We will just use the newest memory text, and increment the merge count
 	// TODO: Store merges in a separate collection for data analysis
@@ -164,6 +170,7 @@ func (s ShortTermMemoryRepository) Merge(
 		return nil, err
 	}
 	oldMemory.Memory = otherMemory
+	oldMemory.RelatedContext = otherMemoryRelatedContext
 	oldMemory.MergeCount++
 	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
 	filter := bson.M{"_id": memoryIdObjectId}

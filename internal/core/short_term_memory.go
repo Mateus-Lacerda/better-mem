@@ -10,17 +10,19 @@ type NewShortTermMemory struct {
 	Merged      bool      `json:"merged"`
 	CreatedAt   time.Time `json:"created_at"`
 	Active      bool      `json:"active"`
+	RelatedContext []MessageRelatedContext `json:"related_context"`
 }
 
 type ShortTermMemory struct {
-	Id          string    `json:"id" bson:"_id"`
-	Memory      string    `json:"memory"`
-	ChatId      string    `json:"chat_id"`
-	AccessCount int       `json:"access_count"`
-	MergeCount  int       `json:"merge_count"`
-	Merged      bool      `json:"merged"`
-	CreatedAt   time.Time `json:"created_at"`
-	Active      bool      `json:"active"`
+	Id             string                  `json:"id" bson:"_id"`
+	Memory         string                  `json:"memory"`
+	ChatId         string                  `json:"chat_id"`
+	AccessCount    int                     `json:"access_count"`
+	MergeCount     int                     `json:"merge_count"`
+	Merged         bool                    `json:"merged"`
+	CreatedAt      time.Time               `json:"created_at"`
+	Active         bool                    `json:"active"`
+	RelatedContext []MessageRelatedContext `json:"related_context"`
 }
 
 type ShortTermMemoryArray struct {
@@ -36,4 +38,5 @@ type ShortTermMemoryModel struct {
 	Merged      bool      `json:"merged"`
 	CreatedAt   time.Time `json:"createdat"`
 	Active      bool      `json:"active"`
+	RelatedContext []MessageRelatedContext `json:"related_context"`
 }

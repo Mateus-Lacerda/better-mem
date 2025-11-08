@@ -71,7 +71,18 @@ func (s *ChatSession) Start() error {
 			fmt.Printf("Error fetching memories from better-mem: %v\n", err)
 		}
 
-		if err := s.apiClient.SendMessage(s.config.ChatID, userInput); err != nil {
+
+		// Send last 2 messages as related context to better-mem
+		var relatedContext []MessageRelatedContext
+		historyMessages := s.history.GetMessages(s.config.ChatID, 2)
+		for _, msg := range historyMessages {
+			relatedContext = append(relatedContext, MessageRelatedContext{
+				User:    msg.Role,
+				Context: msg.Content,
+			})
+		}
+
+		if err := s.apiClient.SendMessage(s.config.ChatID, userInput, relatedContext); err != nil {
 			fmt.Printf("Error sending message to better-mem: %v\n", err)
 		}
 
@@ -93,6 +104,11 @@ func (s *ChatSession) Start() error {
 					mem.Score, 
 					mem.Text,
 				)
+				fmt.Printf("    %s: %s\n", cyan("Criada em"), mem.CreatedAt)
+				for _, context := range mem.RelatedContext {
+					fmt.Printf("    %s: %s\n", cyan("Usuário"), context.User)
+					fmt.Printf("    %s: %s\n", cyan("Contexto"), context.Context)
+				}
 			}
 			fmt.Println()
 		}
@@ -125,7 +141,11 @@ func (s *ChatSession) generateResponse(userInput string, memories []ScoredMemory
 			return memories[i].Score > memories[j].Score
 		})
 		for _, mem := range memories {
-			systemPrompt += fmt.Sprintf("- %s (relevance: %.2f)\n", mem.Text, mem.Score)
+			systemPrompt += fmt.Sprintf("- %s (relevance: %.2f, created at: %s)\n", mem.Text, mem.Score, mem.CreatedAt)
+			systemPrompt += "  Related context:\n"
+			for _, context := range mem.RelatedContext {
+				systemPrompt += fmt.Sprintf("  - From: %s\n    %s\n", context.User, context.Context)
+			}
 		}
 	}
 

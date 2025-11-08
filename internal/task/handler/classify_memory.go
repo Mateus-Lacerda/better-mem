@@ -85,11 +85,16 @@ func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 		if labeledMessage.Label == core.ShortTerm {
 			// Merge the memories
 			h.shortTermMemoryService.Merge(
-				ctx, payload.ChatId, similarMemory.Payload.MemoryId, payload.Message,
+				ctx,
+				payload.ChatId,
+				similarMemory.Payload.MemoryId,
+				payload.Message,
+				payload.RelatedContext,
 			)
 		}
 		return nil
 	}
+	labeledMessage.RelatedContext = payload.RelatedContext
 
 	storeMemoryPayload := task.StoreMemoryPayload{
 		LabeledMessage: *labeledMessage,
@@ -130,6 +135,7 @@ func (h *MessageTaskHandler) HandleStoreLongTermMemoryTask(
 		ctx,
 		payload.Message,
 		payload.ChatId,
+		payload.RelatedContext,
 	)
 	if err != nil {
 		slog.Error("HandleStoreLongTermMemoryTask", "error", err)
@@ -161,6 +167,7 @@ func (h *MessageTaskHandler) HandleStoreShortTermMemoryTask(
 		ctx,
 		payload.Message,
 		payload.ChatId,
+		payload.RelatedContext,
 	)
 	if err != nil {
 		slog.Error("HandleStoreShortTermMemoryTask", "error", err)

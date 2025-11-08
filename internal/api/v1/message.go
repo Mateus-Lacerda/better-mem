@@ -33,7 +33,7 @@ func (h *MessageHandler) AddMessage(context *gin.Context) {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	if err := service.AddMessage(m.ChatId, m.Message); err != nil {
+	if err := service.AddMessage(m.ChatId, m.Message, m.RelatedContext); err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}

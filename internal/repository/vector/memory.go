@@ -1,8 +1,8 @@
 package vector
 
 import (
-	"context"
 	"better-mem/internal/core"
+	"context"
 )
 
 type MemoryVectorRepository interface {
@@ -22,4 +22,3 @@ type MemoryVectorRepository interface {
 	) (*[]core.ScoredMemoryVector, error)
 	Deactivate(ctx context.Context, chatId string, id string) error
 }
-

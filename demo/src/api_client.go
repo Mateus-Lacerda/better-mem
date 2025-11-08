@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type APIClient struct {
@@ -25,8 +26,9 @@ type CreateChatRequest struct {
 }
 
 type NewMessageRequest struct {
-	ChatID  string `json:"chat_id"`
-	Message string `json:"message"`
+	ChatID         string                  `json:"chat_id"`
+	Message        string                  `json:"message"`
+	RelatedContext []MessageRelatedContext `json:"related_context"`
 }
 
 type MemoryFetchRequest struct {
@@ -37,10 +39,17 @@ type MemoryFetchRequest struct {
 	LongTermThreshold     float32 `json:"long_term_threshold"`
 }
 
+type MessageRelatedContext struct {
+	Context string `json:"context"`
+	User    string `json:"user"`
+}
+
 type ScoredMemory struct {
-	Text       string `json:"text"`
-	Score      float32 `json:"score"`
-	MemoryType int    `json:"memory_type"`
+	Text           string                  `json:"text"`
+	Score          float32                 `json:"score"`
+	MemoryType     int                     `json:"memory_type"`
+	CreatedAt      time.Time               `json:"created_at"`
+	RelatedContext []MessageRelatedContext `json:"related_context"`
 }
 
 func (c *APIClient) CreateChat(externalID string) error {
@@ -68,10 +77,11 @@ func (c *APIClient) CreateChat(externalID string) error {
 	return nil
 }
 
-func (c *APIClient) SendMessage(chatID, message string) error {
+func (c *APIClient) SendMessage(chatID, message string, relatedContext []MessageRelatedContext) error {
 	req := NewMessageRequest{
-		ChatID:  chatID,
-		Message: message,
+		ChatID:         chatID,
+		Message:        message,
+		RelatedContext: relatedContext,
 	}
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -124,4 +134,3 @@ func (c *APIClient) FetchMemories(chatID string, req MemoryFetchRequest) ([]Scor
 
 	return memories, nil
 }
-

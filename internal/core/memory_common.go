@@ -1,5 +1,7 @@
 package core
 
+import "time"
+
 type MemoryTypeEnum int
 
 const (
@@ -8,12 +10,21 @@ const (
 	LongTerm
 )
 
+// A memory with a score
 type ScoredMemory struct {
-	Text       string  `json:"text"`
-	Score      float32 `json:"score"`
-	MemoryType MemoryTypeEnum
+	// The text that was used to generate the memory
+	Text string `json:"text"`
+	// The score of the memory
+	Score float32 `json:"score"`
+	// The date the memory was created
+	CreatedAt time.Time `json:"created_at"`
+	// The type of the memory
+	MemoryType MemoryTypeEnum `json:"memory_type"`
+	// Context that might be related to the memory
+	RelatedContext []MessageRelatedContext `json:"related_context"`
 }
 
+// Payload for the memory that is stored in the vector database
 type MemoryPayload struct {
 	ChatId     string         `json:"chat_id"`
 	MemoryType MemoryTypeEnum `json:"memory_type"`
@@ -21,6 +32,8 @@ type MemoryPayload struct {
 	Active     bool           `json:"active"`
 }
 
+// ToMap converts the memory payload to a map that can
+// be used to store in the vector database
 func (m *MemoryPayload) ToMap() map[string]any {
 	return map[string]any{
 		"chat_id":     m.ChatId,
@@ -30,12 +43,14 @@ func (m *MemoryPayload) ToMap() map[string]any {
 	}
 }
 
+// Vector model for the memory
 type MemoryVectorModel struct {
 	Id      string        `json:"id"`
 	Vectors []float32     `json:"vectors"`
 	Payload MemoryPayload `json:"payload"`
 }
 
+// A memory vector with a score
 type ScoredMemoryVector struct {
 	Id      string        `json:"id"`
 	Vectors []float32     `json:"vectors"`
@@ -43,6 +58,7 @@ type ScoredMemoryVector struct {
 	Payload MemoryPayload `json:"payload"`
 }
 
+// Request schema for fetching memories
 type MemoryFetchRequest struct {
 	// Text to be searched
 	Text string `json:"text" example:"I love smart LLMs"`
@@ -56,6 +72,7 @@ type MemoryFetchRequest struct {
 	LongTermThreshold float32 `json:"long_term_threshold" example:"0.6"`
 }
 
+// Result of the memory management
 type MemoryManagementResult struct {
 	ChatId    string
 	Success   bool

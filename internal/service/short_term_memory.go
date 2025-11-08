@@ -21,6 +21,7 @@ func (s *ShortTermMemoryService) Create(
 	ctx context.Context,
 	text string,
 	chatId string,
+	relatedContext []core.MessageRelatedContext,
 ) (*core.ShortTermMemory, error) {
 	memory := &core.NewShortTermMemory{
 		Memory: text,
@@ -30,6 +31,7 @@ func (s *ShortTermMemoryService) Create(
 		Merged: false,
 		CreatedAt: time.Now(),
 		Active: true,
+		RelatedContext: relatedContext,
 	}
 	return s.repo.Create(ctx, memory)
 }
@@ -62,9 +64,13 @@ func (s *ShortTermMemoryService) RegisterUsage(
 }
 
 func (s *ShortTermMemoryService) Merge(
-	ctx context.Context, chatId string, memoryId string, otherMemory string,
+	ctx context.Context,
+	chatId string,
+	memoryId string,
+	otherMemory string,
+	otherMemoryRelatedContext []core.MessageRelatedContext,
 ) (*core.ShortTermMemory, error) {
-	return s.repo.Merge(ctx, chatId, memoryId, otherMemory)
+	return s.repo.Merge(ctx, chatId, memoryId, otherMemory, otherMemoryRelatedContext)
 }
 
 func (s *ShortTermMemoryService) Deactivate(

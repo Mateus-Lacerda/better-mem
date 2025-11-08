@@ -21,6 +21,7 @@ func (s *LongTermMemoryService) Create(
 	ctx context.Context,
 	text,
 	chatId string,
+	relatedContext []core.MessageRelatedContext,
 ) (*core.LongTermMemory, error) {
 	memory := &core.NewLongTermMemory{
 		Memory: text,
@@ -28,7 +29,7 @@ func (s *LongTermMemoryService) Create(
 		AccessCount: 0,
 		CreatedAt: time.Now(),
 		Active: true,
-
+		RelatedContext: relatedContext,
 	}
 	return s.repo.Create(ctx, memory)
 }

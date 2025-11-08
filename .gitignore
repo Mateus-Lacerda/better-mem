@@ -2,6 +2,7 @@
 bin/*
 
 demo/data
+demo/demo.o
 
 tmp/**
 
@@ -10,4 +11,3 @@ tmp/**
 **/__pycache__/**
 *.py[codz]
 *$py.class
-

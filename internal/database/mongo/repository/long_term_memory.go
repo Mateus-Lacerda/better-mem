@@ -159,6 +159,8 @@ func (l *LongTermMemoryRepository) GetScored(
 				Text:       memory.Memory,
 				Score:      score,
 				MemoryType: core.LongTerm,
+				CreatedAt:  memory.CreatedAt,
+				RelatedContext: memory.RelatedContext,
 			},
 		)
 	}
