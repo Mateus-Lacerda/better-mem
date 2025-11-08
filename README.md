@@ -6,7 +6,6 @@ Memory management system for LLMs with automatic classification into short-term 
 
 - `cmd/api` - Main REST API
 - `cmd/worker` - Worker for asynchronous message processing
-- `cmd/demo` - CLI demonstration application
 - `internal/` - Internal application code
 - `inference/` - ML inference service (Python)
 - `demo/` - Demo application package
@@ -39,8 +38,6 @@ docker-compose up -d
 ./demo/build_demo.sh
 ./demo/demo.o
 ```
-
-See more details in [demo/README.md](demo/README.md)
 
 ## API Documentation
 
