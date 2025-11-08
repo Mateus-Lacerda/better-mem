@@ -3,14 +3,17 @@ package v1
 import (
 	"better-mem/internal/core"
 	"better-mem/internal/service"
+	"log/slog"
 
 	"github.com/gin-gonic/gin"
 )
 
-type MessageHandler struct{}
+type MessageHandler struct{
+	chatService *service.ChatService
+}
 
-func NewMessageHandler() *MessageHandler {
-	return &MessageHandler{}
+func NewMessageHandler(chatService *service.ChatService) *MessageHandler {
+	return &MessageHandler{chatService: chatService}
 }
 
 type MessageResponse struct {
@@ -33,7 +36,19 @@ func (h *MessageHandler) AddMessage(context *gin.Context) {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	if err := service.AddMessage(m.ChatId, m.Message, m.RelatedContext); err != nil {
+	chatId, err := h.chatService.GetByExternalId(context, m.ChatId)
+	if err == core.ChatNotFound {
+		slog.Info("Chat not found", "chat_id", m.ChatId)
+		context.JSON(400, gin.H{"error": "Chat not found"})
+		return
+	}
+	if chatId == nil || err != nil {
+		slog.Error("Error getting chat", "error", err)
+		context.JSON(500, gin.H{"error": "Error getting chat"})
+		return
+	}
+	if err := service.AddMessage(*chatId, m.Message, m.RelatedContext); err != nil {
+		slog.Error("Error adding message", "error", err)
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}

@@ -59,8 +59,8 @@ func startServer() {
 	mongoIntUow := uow.NewUnitOfWork[int](mongo.GetMongoClient())
 
 	// Services
-	longTermMemoryService := service.NewLongTermMemoryService(longTermMemoryRepository)
-	shortTermMemoryService := service.NewShortTermMemoryService(shortTermMemoryRepository)
+	longTermMemoryService := service.NewLongTermMemoryService(longTermMemoryRepository, chatRepository)
+	shortTermMemoryService := service.NewShortTermMemoryService(shortTermMemoryRepository, chatRepository)
 	chatService := service.NewChatService(chatRepository)
 	memoryVectorService := service.NewMemoryVectorService(memoryVectorRepository)
 	memoryManagementService := service.NewMemoryManagementService(mongoIntUow)

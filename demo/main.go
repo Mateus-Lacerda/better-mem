@@ -1,10 +1,10 @@
 package main
 
 import (
+	demo "better-mem/demo/src"
 	"fmt"
 	"log"
 	"os"
-	demo "better-mem/demo/src"
 
 	"github.com/common-nighthawk/go-figure"
 	"github.com/fatih/color"
@@ -112,4 +112,3 @@ func main() {
 		}
 	}
 }
-

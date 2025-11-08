@@ -1,20 +1,23 @@
 package service
 
 import (
-	"context"
-	"time"
 	"better-mem/internal/core"
 	"better-mem/internal/repository"
+	"context"
+	"log/slog"
+	"time"
 )
 
 type ShortTermMemoryService struct {
-	repo repository.ShortTermMemoryRepository
+	repo     repository.ShortTermMemoryRepository
+	chatRepo repository.ChatRepository
 }
 
 func NewShortTermMemoryService(
 	repo repository.ShortTermMemoryRepository,
+	chatRepo repository.ChatRepository,
 ) *ShortTermMemoryService {
-	return &ShortTermMemoryService{repo: repo}
+	return &ShortTermMemoryService{repo: repo, chatRepo: chatRepo}
 }
 
 func (s *ShortTermMemoryService) Create(
@@ -24,13 +27,13 @@ func (s *ShortTermMemoryService) Create(
 	relatedContext []core.MessageRelatedContext,
 ) (*core.ShortTermMemory, error) {
 	memory := &core.NewShortTermMemory{
-		Memory: text,
-		ChatId: chatId,
-		AccessCount: 0,
-		MergeCount: 0,
-		Merged: false,
-		CreatedAt: time.Now(),
-		Active: true,
+		Memory:         text,
+		ChatId:         chatId,
+		AccessCount:    0,
+		MergeCount:     0,
+		Merged:         false,
+		CreatedAt:      time.Now(),
+		Active:         true,
 		RelatedContext: relatedContext,
 	}
 	return s.repo.Create(ctx, memory)
@@ -38,11 +41,19 @@ func (s *ShortTermMemoryService) Create(
 
 func (s *ShortTermMemoryService) GetByChatId(
 	ctx context.Context,
-	chatId string,
+	chatExternalId string,
 	limit int,
 	offset int,
 ) (*core.ShortTermMemoryArray, error) {
-	return s.repo.GetByChatId(ctx, chatId, limit, offset)
+	chatId, err := s.chatRepo.GetByExternalID(ctx, chatExternalId)
+	if err != nil {
+		slog.Error("error getting chat id", "error", err)
+		return nil, err
+	}
+	if chatId == nil {
+		return nil, core.ChatNotFound
+	}
+	return s.repo.GetByChatId(ctx, *chatId, limit, offset)
 }
 
 func (s *ShortTermMemoryService) GetById(

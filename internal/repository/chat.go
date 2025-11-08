@@ -8,6 +8,7 @@ import (
 type ChatRepository interface {
 	Create(ctx context.Context, chat *core.Chat) error
 	GetAll(ctx context.Context) ([]*core.Chat, error)
+	GetByExternalID(ctx context.Context, externalID string) (*string, error)
 }
 
 

@@ -91,6 +91,10 @@ func (h *MemoryHandler) GetLongTermMemories(context *gin.Context) {
 	memories, err := h.longTermMemoryService.GetByChatId(
 		context, chat_id, limit, offset,
 	)
+	if err == core.ChatNotFound {
+		context.JSON(404, gin.H{"error": "Chat not found"})
+		return
+	}
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -126,6 +130,10 @@ func (h *MemoryHandler) GetShortTermMemories(context *gin.Context) {
 	memories, err := h.shortTermMemoryService.GetByChatId(
 		context, chat_id, limit, offset,
 	)
+	if err == core.ChatNotFound {
+		context.JSON(404, gin.H{"error": "Chat not found"})
+		return
+	}
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return

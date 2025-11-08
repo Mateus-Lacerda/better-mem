@@ -1,20 +1,22 @@
 package service
 
 import (
-	"context"
-	"time"
 	"better-mem/internal/core"
 	"better-mem/internal/repository"
+	"context"
+	"time"
 )
 
 type LongTermMemoryService struct {
-	repo repository.LongTermMemoryRepository
+	repo     repository.LongTermMemoryRepository
+	chatRepo repository.ChatRepository
 }
 
 func NewLongTermMemoryService(
 	repo repository.LongTermMemoryRepository,
+	chatRepo repository.ChatRepository,
 ) *LongTermMemoryService {
-	return &LongTermMemoryService{repo: repo}
+	return &LongTermMemoryService{repo: repo, chatRepo: chatRepo}
 }
 
 func (s *LongTermMemoryService) Create(
@@ -24,11 +26,11 @@ func (s *LongTermMemoryService) Create(
 	relatedContext []core.MessageRelatedContext,
 ) (*core.LongTermMemory, error) {
 	memory := &core.NewLongTermMemory{
-		Memory: text,
-		ChatId: chatId,
-		AccessCount: 0,
-		CreatedAt: time.Now(),
-		Active: true,
+		Memory:         text,
+		ChatId:         chatId,
+		AccessCount:    0,
+		CreatedAt:      time.Now(),
+		Active:         true,
 		RelatedContext: relatedContext,
 	}
 	return s.repo.Create(ctx, memory)
@@ -36,11 +38,18 @@ func (s *LongTermMemoryService) Create(
 
 func (s *LongTermMemoryService) GetByChatId(
 	ctx context.Context,
-	chatId string,
+	chatExternalId string,
 	limit int,
 	offset int,
 ) (*core.LongTermMemoryArray, error) {
-	return s.repo.GetByChatId(ctx, chatId, limit, offset)
+	chatId, err := s.chatRepo.GetByExternalID(ctx, chatExternalId)
+	if err != nil {
+		return nil, err
+	}
+	if chatId == nil {
+		return nil, core.ChatNotFound
+	}
+	return s.repo.GetByChatId(ctx, *chatId, limit, offset)
 }
 
 func (s *LongTermMemoryService) GetById(

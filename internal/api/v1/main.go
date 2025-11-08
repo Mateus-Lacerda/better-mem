@@ -28,8 +28,8 @@ func Register(router *gin.Engine) {
 		shortTermMemoryRepository := repository.NewShortTermMemoryRepository()
 		memoryVectorRepository := vectorRepo.NewMemoryRepository()
 		chatService := service.NewChatService(chatRepository)
-		longTermMemoryService := service.NewLongTermMemoryService(longTermMemoryRepository)
-		shortTermMemoryService := service.NewShortTermMemoryService(shortTermMemoryRepository)
+		longTermMemoryService := service.NewLongTermMemoryService(longTermMemoryRepository, chatRepository)
+		shortTermMemoryService := service.NewShortTermMemoryService(shortTermMemoryRepository, chatRepository)
 		memoryService := service.NewMemoryService(
 			shortTermMemoryRepository,
 			longTermMemoryRepository,
@@ -41,7 +41,7 @@ func Register(router *gin.Engine) {
 			memoryService,
 		)
 		chatHandler := NewChatHandler(chatService)
-		messageHandler := NewMessageHandler()
+		messageHandler := NewMessageHandler(chatService)
 
 		// Health check
 		v1Router.GET("/health", HealthCheck)

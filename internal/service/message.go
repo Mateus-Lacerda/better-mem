@@ -11,13 +11,6 @@ import (
 
 func AddMessage(chatId, message string, relatedContext []core.MessageRelatedContext) error {
 	// Debug related context
-	for _, context := range relatedContext {
-		slog.Info(
-			"related context",
-			slog.String("message", context.Context),
-			slog.String("role", context.User),
-		)
-	}
 	client := asynq.NewClient(asynq.RedisClientOpt{Addr: config.Database.RedisAddress})
 
 	defer client.Close()

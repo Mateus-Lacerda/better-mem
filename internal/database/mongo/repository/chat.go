@@ -1,9 +1,9 @@
 package repository
 
 import (
+	"better-mem/internal/core"
 	"context"
 	"log/slog"
-	"better-mem/internal/core"
 
 	"better-mem/internal/database/mongo"
 	"better-mem/internal/repository"
@@ -32,6 +32,23 @@ func (r *ChatRepository) Create(ctx context.Context, chat *core.Chat) error {
 	}
 	slog.Info("Chat created", "id", result.InsertedID)
 	return nil
+}
+
+// GetByExternalID implements repository.ChatRepository.
+func (r *ChatRepository) GetByExternalID(ctx context.Context, externalID string) (*string, error) {
+	result := r.FindOne(ctx, bson.D{{Key: "externalid", Value: externalID}})
+	if result.Err() == mongoDriver.ErrNoDocuments {
+		return nil, core.ChatNotFound
+	}
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+	var chat mongo.Chat
+	err := result.Decode(&chat)
+	if err != nil {
+		return nil, err
+	}
+	return &chat.ID, nil
 }
 
 // GetAll implements repository.ChatRepository.

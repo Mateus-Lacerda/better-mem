@@ -30,6 +30,10 @@ func (s *ChatService) Create(
 	return err
 }
 
+func (s *ChatService) GetByExternalId(ctx context.Context, externalId string) (*string, error) {
+	return s.repo.GetByExternalID(ctx, externalId)
+}
+
 func (s *ChatService) GetAll(ctx context.Context) ([]*core.Chat, error) {
 	return s.repo.GetAll(ctx)
 }

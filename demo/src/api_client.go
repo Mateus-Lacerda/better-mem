@@ -88,11 +88,20 @@ func (c *APIClient) SendMessage(chatID, message string, relatedContext []Message
 		return err
 	}
 
-	resp, err := c.client.Post(
-		fmt.Sprintf("%s/message", c.baseURL),
-		"application/json",
-		bytes.NewBuffer(body),
-	)
+	send := func() (*http.Response, error) {
+		return c.client.Post(
+			fmt.Sprintf("%s/message", c.baseURL),
+			"application/json",
+			bytes.NewBuffer(body),
+		)
+	}
+
+	resp, err := send()
+	if resp.StatusCode == http.StatusBadRequest {
+		c.CreateChat(chatID)
+		resp, err = send()
+	}
+
 	if err != nil {
 		return err
 	}
