@@ -27,10 +27,11 @@ type LongTermMemoryArray struct {
 }
 
 type LongTermMemoryModel struct {
-	Memory      string    `json:"memory"`
-	ChatId      string    `json:"chatid"`
-	AccessCount int       `json:"accesscount"`
-	CreatedAt   time.Time `json:"createdat"`
-	Active      bool      `json:"active"`
+	Id             string                  `json:"id" bson:"_id"`
+	Memory         string                  `json:"memory"`
+	ChatId         string                  `json:"chatid"`
+	AccessCount    int                     `json:"accesscount"`
+	CreatedAt      time.Time               `json:"createdat"`
+	Active         bool                    `json:"active"`
 	RelatedContext []MessageRelatedContext `json:"related_context"`
 }

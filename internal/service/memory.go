@@ -40,7 +40,6 @@ func (s *MemoryService) Fetch(
 	threshold float32,
 	longTermThreshold float32,
 ) ([]*core.ScoredMemory, error) {
-	slog.Warn("TODO: Add similarity score relevancy to count")
 	var memories []*core.ScoredMemory
 	vectorService := NewMemoryVectorService(s.vectorRepo)
 	embeddings, err := protos.Embed(query)
@@ -67,14 +66,12 @@ func (s *MemoryService) Fetch(
 	for _, memory := range *similarMemories {
 		switch memory.Payload.MemoryType {
 		case core.ShortTerm:
-			s.shortTermRepo.RegisterUsage(ctx, chatId, memory.Payload.MemoryId)
 			shortTermMemories = append(
 				shortTermMemories,
 				memory.Payload.MemoryId,
 			)
 		case core.LongTerm:
 			if memory.Score >= longTermThreshold {
-				s.longTermRepo.RegisterUsage(ctx, chatId, memory.Payload.MemoryId)
 				longTermMemories = append(
 					longTermMemories,
 					memory.Payload.MemoryId,
@@ -96,7 +93,6 @@ func (s *MemoryService) Fetch(
 		slog.Error("Error getting long term memories", "error", err)
 		return memories, err
 	}
-	// Sort by score
 	memories = append(scoredSTMemories, scoredLTMemories...)
 	if len(memories) == 0 {
 		return memories, nil
@@ -104,11 +100,22 @@ func (s *MemoryService) Fetch(
 	if limit > len(memories) {
 		limit = len(memories)
 	}
+	// Sort by score
 	sort.SliceStable(
 		memories[:],
 		func(i, j int) bool {
 			return memories[i].Score > memories[j].Score
 		},
 	)
-	return memories[:limit], nil
+	finalMemories := memories[:limit]
+	for _, memory := range finalMemories {
+		switch memory.MemoryType {
+		case core.ShortTerm:
+			s.shortTermRepo.RegisterUsage(ctx, chatId, memory.Id)
+		case core.LongTerm:
+			s.longTermRepo.RegisterUsage(ctx, chatId, memory.Id)
+			
+		}
+	}
+	return finalMemories, nil
 }

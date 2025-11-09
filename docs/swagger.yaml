@@ -87,6 +87,9 @@ definitions:
       created_at:
         description: The date the memory was created
         type: string
+      id:
+        description: The id of the memory
+        type: string
       memory_type:
         allOf:
         - $ref: '#/definitions/core.MemoryTypeEnum'

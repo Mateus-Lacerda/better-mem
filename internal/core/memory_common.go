@@ -12,6 +12,8 @@ const (
 
 // A memory with a score
 type ScoredMemory struct {
+	// The id of the memory
+	Id string `json:"id"`
 	// The text that was used to generate the memory
 	Text string `json:"text"`
 	// The score of the memory

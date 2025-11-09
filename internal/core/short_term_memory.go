@@ -31,6 +31,7 @@ type ShortTermMemoryArray struct {
 }
 
 type ShortTermMemoryModel struct {
+	Id          string    `json:"id" bson:"_id"`
 	Memory      string    `json:"memory"`
 	ChatId      string    `json:"chatid"`
 	AccessCount int       `json:"accesscount"`

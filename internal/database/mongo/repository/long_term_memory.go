@@ -108,8 +108,9 @@ func (l *LongTermMemoryRepository) GetScored(
 	chatId string,
 	memoriesIds []string,
 ) ([]*core.ScoredMemory, error) {
+	var scoredMemories []*core.ScoredMemory
 	if len(memoriesIds) == 0 {
-		return []*core.ScoredMemory{}, nil
+		return scoredMemories, nil
 	}
 	var objectIds []primitive.ObjectID
 	for _, id := range memoriesIds {
@@ -136,7 +137,6 @@ func (l *LongTermMemoryRepository) GetScored(
 		return nil, err
 	}
 
-	var scoredMemories []*core.ScoredMemory
 	maxAge, maxAccessCount, err := l.helper.GetMaxCounts(rawMemories)
 	if err != nil {
 		slog.Error("failed to get max counts", "error", err)
@@ -156,6 +156,7 @@ func (l *LongTermMemoryRepository) GetScored(
 		}
 		scoredMemories = append(
 			scoredMemories, &core.ScoredMemory{
+				Id:         memory.Id,
 				Text:       memory.Memory,
 				Score:      score,
 				MemoryType: core.LongTerm,

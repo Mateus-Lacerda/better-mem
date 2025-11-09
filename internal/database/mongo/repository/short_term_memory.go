@@ -107,8 +107,9 @@ func (s ShortTermMemoryRepository) GetScored(
 	chatId string,
 	memoriesIds []string,
 ) ([]*core.ScoredMemory, error) {
+	var memories []*core.ScoredMemory
 	if len(memoriesIds) == 0 {
-		return []*core.ScoredMemory{}, nil
+		return memories, nil
 	}
 	var objectIds []primitive.ObjectID
 	for _, id := range memoriesIds {
@@ -118,6 +119,7 @@ func (s ShortTermMemoryRepository) GetScored(
 		}
 		objectIds = append(objectIds, objectId)
 	}
+
 	filter := bson.M{
 		"chatid": chatId,
 		"_id":    bson.M{"$in": objectIds},
@@ -135,8 +137,6 @@ func (s ShortTermMemoryRepository) GetScored(
 
 	maxAccessCount, maxMergeCount := s.helper.GetMaxCounts(rawMemories)
 	now := time.Now().Unix()
-	var memories []*core.ScoredMemory
-
 	for _, memory := range rawMemories {
 		score, err := s.helper.CalculateScore(
 			memory, maxAccessCount, maxMergeCount, now,
@@ -145,10 +145,11 @@ func (s ShortTermMemoryRepository) GetScored(
 			return nil, err
 		}
 		memories = append(memories, &core.ScoredMemory{
-			Score:      score,
-			Text:       memory.Memory,
-			MemoryType: core.ShortTerm,
-			CreatedAt:  memory.CreatedAt,
+			Id:             memory.Id,
+			Score:          score,
+			Text:           memory.Memory,
+			MemoryType:     core.ShortTerm,
+			CreatedAt:      memory.CreatedAt,
 			RelatedContext: memory.RelatedContext,
 		})
 	}

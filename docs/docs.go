@@ -425,6 +425,10 @@ const docTemplate = `{
                     "description": "The date the memory was created",
                     "type": "string"
                 },
+                "id": {
+                    "description": "The id of the memory",
+                    "type": "string"
+                },
                 "memory_type": {
                     "description": "The type of the memory",
                     "allOf": [
