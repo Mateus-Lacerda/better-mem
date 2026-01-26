@@ -28,9 +28,11 @@ func NewLongTermMemoryRepository() *LongTermMemoryRepository {
 	}
 }
 
-// Create implements repository.LongTermMemoryRepository.
+// Create implements [repository.LongTermMemoryRepository].
 func (l *LongTermMemoryRepository) Create(ctx context.Context, memory *core.NewLongTermMemory) (*core.LongTermMemory, error) {
-	res, err := l.InsertOne(ctx, memory)
+	dbMemory := l.helper.SchemaToDbModel(memory)
+
+	res, err := l.InsertOne(ctx, dbMemory)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +47,7 @@ func (l *LongTermMemoryRepository) Create(ctx context.Context, memory *core.NewL
 	return createdMemory, nil
 }
 
-// Deactivate implements repository.LongTermMemoryRepository.
+// Deactivate implements [repository.LongTermMemoryRepository].
 func (l *LongTermMemoryRepository) Deactivate(ctx context.Context, chatId string, memoryId string) error {
 	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
 	if err != nil {
@@ -60,7 +62,7 @@ func (l *LongTermMemoryRepository) Deactivate(ctx context.Context, chatId string
 	return nil
 }
 
-// GetByChatId implements repository.LongTermMemoryRepository.
+// GetByChatId implements [repository.LongTermMemoryRepository].
 func (l *LongTermMemoryRepository) GetByChatId(ctx context.Context, chatId string, limit int, offset int) (*core.LongTermMemoryArray, error) {
 	filter := bson.M{"chatid": chatId, "active": true}
 	cursor, err := l.Find(
@@ -83,7 +85,7 @@ func (l *LongTermMemoryRepository) GetByChatId(ctx context.Context, chatId strin
 	}, nil
 }
 
-// GetById implements repository.LongTermMemoryRepository.
+// GetById implements [repository.LongTermMemoryRepository].
 func (l *LongTermMemoryRepository) GetById(ctx context.Context, chatId string, memoryId string) (*core.LongTermMemory, error) {
 	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
 	if err != nil {
@@ -102,7 +104,7 @@ func (l *LongTermMemoryRepository) GetById(ctx context.Context, chatId string, m
 	return &memory, nil
 }
 
-// GetScored implements repository.LongTermMemoryRepository.
+// GetScored implements [repository.LongTermMemoryRepository].
 func (l *LongTermMemoryRepository) GetScored(
 	ctx context.Context,
 	chatId string,
@@ -156,11 +158,11 @@ func (l *LongTermMemoryRepository) GetScored(
 		}
 		scoredMemories = append(
 			scoredMemories, &core.ScoredMemory{
-				Id:         memory.Id,
-				Text:       memory.Memory,
-				Score:      score,
-				MemoryType: core.LongTerm,
-				CreatedAt:  memory.CreatedAt,
+				Id:             memory.Id,
+				Text:           memory.Memory,
+				Score:          score,
+				MemoryType:     core.LongTerm,
+				CreatedAt:      memory.CreatedAt,
 				RelatedContext: memory.RelatedContext,
 			},
 		)
@@ -169,7 +171,7 @@ func (l *LongTermMemoryRepository) GetScored(
 	return scoredMemories, nil
 }
 
-// RegisterUsage implements repository.LongTermMemoryRepository.
+// RegisterUsage implements [repository.LongTermMemoryRepository].
 func (l *LongTermMemoryRepository) RegisterUsage(ctx context.Context, chatId string, memoryId string) error {
 	memory, err := l.GetById(ctx, chatId, memoryId)
 	if err != nil {
@@ -184,6 +186,17 @@ func (l *LongTermMemoryRepository) RegisterUsage(ctx context.Context, chatId str
 	update := bson.M{"$set": bson.M{"accesscount": memory.AccessCount}}
 	_, err = l.UpdateOne(ctx, filter, update)
 	return err
+}
+
+// DeactivateAll implements [repository.LongTermMemoryRepository].
+func (l *LongTermMemoryRepository) DeactivateAll(ctx context.Context, chatId string) error {
+	filter := bson.M{"chatid": chatId}
+	update := bson.M{"$set": bson.M{"active": false}}
+	_, err := l.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var _ repository.LongTermMemoryRepository = (*LongTermMemoryRepository)(nil)

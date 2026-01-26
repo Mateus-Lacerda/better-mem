@@ -19,7 +19,7 @@ func (s *ChatService) Create(
 	ctx context.Context,
 	externalId string,
 ) error {
-	chat := &core.Chat{
+	chat := &core.NewChat{
 		ExternalId: externalId,
 	}
 	err := s.repo.Create(ctx, chat)

@@ -15,27 +15,23 @@ type QdrantClient struct {
 
 var (
 	once sync.Once
-	qdrantClient *QdrantClient
 )
 
 // Get Qdrant client
-func GetQdrantClient() *QdrantClient {
-	// TODO: Use dependency injection instead of singleton
-	once.Do(func() {
-		client, err := qdrant.NewClient(&qdrant.Config{
-			Host:     config.Database.QdrantHost,
-			Port:     config.Database.QdrantPort,
-			UseTLS:   false,
-		})
-		if err != nil {
-			slog.Error("Error connecting to Qdrant", "error", err)
-			panic(err)
-		}
-		qdrantClient = &QdrantClient{
-			Client: client,
-		}
-		slog.Info("Qdrant client created")
+func NewQdrantClient() *QdrantClient {
+	client, err := qdrant.NewClient(&qdrant.Config{
+		Host:   config.Database.QdrantHost,
+		Port:   config.Database.QdrantPort,
+		UseTLS: false,
 	})
+	if err != nil {
+		slog.Error("Error connecting to Qdrant", "error", err)
+		panic(err)
+	}
+	qdrantClient := &QdrantClient{
+		Client: client,
+	}
+	slog.Info("Qdrant client created")
 	return qdrantClient
 }
 
@@ -93,12 +89,12 @@ func EnsureCollection(
 	return nil
 }
 
-// Creates a global Qdrant client and ensures the collection exists
-func SetupQdrant() error {
+// Tests the qdrant collection and ensures the collection exists
+func TestQdrant() error {
 	ctx := context.Background()
 	defer ctx.Done()
 
-	client := GetQdrantClient()
+	client := NewQdrantClient()
 	slog.Info("Connecting to Qdrant")
 	_, err := client.HealthCheck(ctx)
 	if err != nil {

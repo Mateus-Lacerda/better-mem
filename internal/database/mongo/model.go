@@ -6,6 +6,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Chat struct {
@@ -15,11 +16,19 @@ type Chat struct {
 
 type chatConfig struct {
 	CollectionName string
+	Indexes        mongo.IndexModel
 }
 
 func ChatConfig() chatConfig {
+	indexes := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "external_id", Value: 1},
+		},
+		Options: options.Index().SetUnique(true),
+	}
 	return chatConfig{
 		CollectionName: "chats",
+		Indexes:        indexes,
 	}
 }
 
@@ -106,6 +115,7 @@ func CreateCollections(db mongo.Database) error {
 func CreateIndexes(db mongo.Database) error {
 	longTermMemoryConfig := LongTermMemoryConfig()
 	shortTermMemoryConfig := ShortTermMemoryConfig()
+	chatConfig := ChatConfig()
 
 	ctx := context.Background()
 	defer ctx.Done()
@@ -136,5 +146,18 @@ func CreateIndexes(db mongo.Database) error {
 		return err
 	}
 
+	_, err = db.Collection(
+		chatConfig.CollectionName,
+	).Indexes().CreateOne(
+		ctx, chatConfig.Indexes,
+	)
+
+	if err != nil {
+		slog.Error(
+			"failed to create indexes for chat",
+			"error", err,
+		)
+		return err
+	}
 	return nil
 }

@@ -1,18 +1,18 @@
 package v1
 
 import (
-	"strconv"
 	"better-mem/internal/core"
 	"better-mem/internal/service"
+	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-
 type MemoryHandler struct {
 	shortTermMemoryService *service.ShortTermMemoryService
-	longTermMemoryService *service.LongTermMemoryService
-	memoryService *service.MemoryService
+	longTermMemoryService  *service.LongTermMemoryService
+	memoryService          *service.MemoryService
 }
 
 func NewMemoryHandler(
@@ -22,8 +22,8 @@ func NewMemoryHandler(
 ) *MemoryHandler {
 	return &MemoryHandler{
 		shortTermMemoryService: shortTermMemoryService,
-		longTermMemoryService: longTermMemoryService,
-		memoryService: memoryService,
+		longTermMemoryService:  longTermMemoryService,
+		memoryService:          memoryService,
 	}
 }
 
@@ -42,16 +42,16 @@ func (h *MemoryHandler) FetchMemories(context *gin.Context) {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	chat_id := context.Param("chat_id")
-	if chat_id == "" {
+	chatId := context.Param("chat_id")
+	if chatId == "" {
 		context.JSON(400, gin.H{"error": "Invalid chat id"})
 		return
 	}
 	memories, err := h.memoryService.Fetch(
-		context, 
-		chat_id, 
+		context,
+		chatId,
 		request.Text,
-		request.Limit, 
+		request.Limit,
 		request.VectorSearchLimit,
 		request.VectorSearchThreshold,
 		request.LongTermThreshold,
@@ -62,7 +62,6 @@ func (h *MemoryHandler) FetchMemories(context *gin.Context) {
 	}
 	context.JSON(200, memories)
 }
-
 
 // @Summary Get Long Term Memories
 // @Description Get long term memories for a given chat.
@@ -75,7 +74,7 @@ func (h *MemoryHandler) FetchMemories(context *gin.Context) {
 // @Success 200 {object} []core.LongTermMemory
 // @Router /memory/long-term/chat/{chat_id} [get]
 func (h *MemoryHandler) GetLongTermMemories(context *gin.Context) {
-	chat_id := context.Param("chat_id")
+	chatId := context.Param("chat_id")
 	limitStr := context.Query("limit")
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
@@ -89,7 +88,7 @@ func (h *MemoryHandler) GetLongTermMemories(context *gin.Context) {
 		return
 	}
 	memories, err := h.longTermMemoryService.GetByChatId(
-		context, chat_id, limit, offset,
+		context, chatId, limit, offset,
 	)
 	if err == core.ChatNotFound {
 		context.JSON(404, gin.H{"error": "Chat not found"})
@@ -102,7 +101,6 @@ func (h *MemoryHandler) GetLongTermMemories(context *gin.Context) {
 	context.JSON(200, memories)
 }
 
-
 // @Summary Get Short Term Memories
 // @Description Get short term memories for a given chat.
 // @Tags memories
@@ -114,7 +112,7 @@ func (h *MemoryHandler) GetLongTermMemories(context *gin.Context) {
 // @Success 200 {object} []core.ShortTermMemory
 // @Router /memory/short-term/chat/{chat_id} [get]
 func (h *MemoryHandler) GetShortTermMemories(context *gin.Context) {
-	chat_id := context.Param("chat_id")
+	chatId := context.Param("chat_id")
 	limitStr := context.Query("limit")
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
@@ -128,7 +126,7 @@ func (h *MemoryHandler) GetShortTermMemories(context *gin.Context) {
 		return
 	}
 	memories, err := h.shortTermMemoryService.GetByChatId(
-		context, chat_id, limit, offset,
+		context, chatId, limit, offset,
 	)
 	if err == core.ChatNotFound {
 		context.JSON(404, gin.H{"error": "Chat not found"})
@@ -139,4 +137,25 @@ func (h *MemoryHandler) GetShortTermMemories(context *gin.Context) {
 		return
 	}
 	context.JSON(200, memories)
+}
+
+// @Summary Deactivate All Memories
+// @Description Deactivates all the memories, should be retried on fail since it may leave unwanted data.
+// @Tags memories
+// @Param chat_id path string true "Chat ID"
+// @Success 200
+// @Router /memory/chat/{chat_id}/deactivate [put]
+func (h *MemoryHandler) DeactivateAllMemories(context *gin.Context) {
+	chatId := context.Param("chat_id")
+	if err := h.shortTermMemoryService.DeactivateAll(context, chatId); err != nil {
+		context.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	if err := h.longTermMemoryService.DeactivateAll(context, chatId); err != nil {
+		context.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	if err := h.memoryService.DeactivateAll(context, chatId); err != nil {
+		context.AbortWithError(http.StatusInternalServerError, err)
+	}
 }

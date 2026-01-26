@@ -21,4 +21,5 @@ type ShortTermMemoryRepository interface {
 	Merge(ctx context.Context, chatId string, memoryId string, otherMemory string, otherMemoryRelatedContext []core.MessageRelatedContext) (*core.ShortTermMemory, error)
 	GetElligibleForDeactivation(ctx context.Context, chatId string, window time.Duration, minimalRelevance int) ([]*core.ShortTermMemory, error)
 	GetElligibleForPromotion(ctx context.Context, chatId string, minimalRelevance int) ([]*core.ShortTermMemory, error)
+	DeactivateAll(ctx context.Context, chatId string) error
 }

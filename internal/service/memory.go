@@ -3,13 +3,13 @@ package service
 import (
 	// "context"
 	// "better-mem/internal/core"
-	"context"
-	"log/slog"
-	"sort"
 	"better-mem/internal/core"
 	protos "better-mem/internal/grpc_client"
 	"better-mem/internal/repository"
 	"better-mem/internal/repository/vector"
+	"context"
+	"log/slog"
+	"sort"
 )
 
 type MemoryService struct {
@@ -29,7 +29,6 @@ func NewMemoryService(
 		vectorRepo:    vectorRepo,
 	}
 }
-
 
 func (s *MemoryService) Fetch(
 	ctx context.Context,
@@ -114,8 +113,12 @@ func (s *MemoryService) Fetch(
 			s.shortTermRepo.RegisterUsage(ctx, chatId, memory.Id)
 		case core.LongTerm:
 			s.longTermRepo.RegisterUsage(ctx, chatId, memory.Id)
-			
+
 		}
 	}
 	return finalMemories, nil
+}
+
+func (s *MemoryService) DeactivateAll(ctx context.Context, chatId string) error {
+	return s.vectorRepo.DeactivateAll(ctx, chatId)
 }

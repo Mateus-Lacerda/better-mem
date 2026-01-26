@@ -47,7 +47,7 @@ func (h *MessageHandler) AddMessage(context *gin.Context) {
 		context.JSON(500, gin.H{"error": "Error getting chat"})
 		return
 	}
-	if err := service.AddMessage(*chatId, m.Message, m.RelatedContext); err != nil {
+	if err := service.AddMessage(m.ChatId, m.Message, m.RelatedContext); err != nil {
 		slog.Error("Error adding message", "error", err)
 		context.JSON(500, gin.H{"error": err.Error()})
 		return

@@ -28,9 +28,11 @@ func NewShortTermMemoryRepository() ShortTermMemoryRepository {
 	}
 }
 
-// Create implements repository.ShortTermMemoryRepository.
+// Create implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) Create(ctx context.Context, memory *core.NewShortTermMemory) (*core.ShortTermMemory, error) {
-	res, err := s.InsertOne(ctx, memory)
+	dbMemory := s.helper.SchemaToDbModel(memory)
+
+	res, err := s.InsertOne(ctx, dbMemory)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +49,7 @@ func (s ShortTermMemoryRepository) Create(ctx context.Context, memory *core.NewS
 	return createdMemory, nil
 }
 
-// Deactivate implements repository.ShortTermMemoryRepository.
+// Deactivate implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) Deactivate(ctx context.Context, chatId string, memoryId string) error {
 	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
 	if err != nil {
@@ -59,7 +61,7 @@ func (s ShortTermMemoryRepository) Deactivate(ctx context.Context, chatId string
 	return err
 }
 
-// GetByChatId implements repository.ShortTermMemoryRepository.
+// GetByChatId implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) GetByChatId(ctx context.Context, chatId string, limit int, offset int) (*core.ShortTermMemoryArray, error) {
 	filter := bson.M{"chatid": chatId, "active": true}
 	cursor, err := s.Find(
@@ -82,7 +84,7 @@ func (s ShortTermMemoryRepository) GetByChatId(ctx context.Context, chatId strin
 	}, nil
 }
 
-// GetById implements repository.ShortTermMemoryRepository.
+// GetById implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) GetById(ctx context.Context, chatId string, memoryId string) (*core.ShortTermMemory, error) {
 	memoryIdObjectId, err := primitive.ObjectIDFromHex(memoryId)
 	if err != nil {
@@ -101,7 +103,7 @@ func (s ShortTermMemoryRepository) GetById(ctx context.Context, chatId string, m
 	return &memory, nil
 }
 
-// GetScored implements repository.ShortTermMemoryRepository.
+// GetScored implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) GetScored(
 	ctx context.Context,
 	chatId string,
@@ -156,7 +158,7 @@ func (s ShortTermMemoryRepository) GetScored(
 	return memories, nil
 }
 
-// Merge implements repository.ShortTermMemoryRepository.
+// Merge implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) Merge(
 	ctx context.Context,
 	chatId string,
@@ -183,7 +185,7 @@ func (s ShortTermMemoryRepository) Merge(
 	return oldMemory, nil
 }
 
-// RegisterUsage implements repository.ShortTermMemoryRepository.
+// RegisterUsage implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) RegisterUsage(ctx context.Context, chatId string, memoryId string) error {
 	memory, err := s.GetById(ctx, chatId, memoryId)
 	if err != nil {
@@ -201,7 +203,7 @@ func (s ShortTermMemoryRepository) RegisterUsage(ctx context.Context, chatId str
 	return err
 }
 
-// GetElligibleForDeactivation implements repository.ShortTermMemoryRepository.
+// GetElligibleForDeactivation implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) GetElligibleForDeactivation(
 	ctx context.Context,
 	chatId string,
@@ -233,7 +235,7 @@ func (s ShortTermMemoryRepository) GetElligibleForDeactivation(
 	return memories, nil
 }
 
-// GetElligibleForPromotion implements repository.ShortTermMemoryRepository.
+// GetElligibleForPromotion implements [repository.ShortTermMemoryRepository].
 func (s ShortTermMemoryRepository) GetElligibleForPromotion(
 	ctx context.Context, chatId string, minimalRelevance int,
 ) ([]*core.ShortTermMemory, error) {
@@ -257,6 +259,17 @@ func (s ShortTermMemoryRepository) GetElligibleForPromotion(
 		return nil, err
 	}
 	return memories, nil
+}
+
+// DeactivateAll implements [repository.ShortTermMemoryRepository].
+func (s ShortTermMemoryRepository) DeactivateAll(ctx context.Context, chatId string) error {
+	filter := bson.M{"chatid": chatId}
+	update := bson.M{"$set": bson.M{"active": false}}
+	_, err := s.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var _ repository.ShortTermMemoryRepository = (*ShortTermMemoryRepository)(nil)

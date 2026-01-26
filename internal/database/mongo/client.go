@@ -1,11 +1,11 @@
 package mongo
 
 import (
+	"better-mem/internal/config"
 	"context"
 	"log/slog"
 	"sync"
 	"time"
-	"better-mem/internal/config"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,30 +16,23 @@ type MongoClient struct {
 }
 
 var (
-	lock        = &sync.Mutex{}
-	mongoClient *MongoClient
+	lock = &sync.Mutex{}
 )
 
 func GetMongoClient() *MongoClient {
-	if mongoClient == nil {
-		lock.Lock()
-		defer lock.Unlock()
-		options := options.Client().
-			ApplyURI(config.Database.MongoUri).
-			SetConnectTimeout(
-				time.Duration(config.Database.MongoTimeout) * time.Second,
-			)
-		ctx := context.Background()
-		client, err := mongo.Connect(ctx, options)
-		if err != nil {
-			slog.Error("Error connecting to MongoDB", "error", err)
-			panic(err)
-		}
-		if mongoClient == nil {
-			mongoClient = &MongoClient{
-				Client: client,
-			}
-		}
+	options := options.Client().
+		ApplyURI(config.Database.MongoUri).
+		SetConnectTimeout(
+			time.Duration(config.Database.MongoTimeout) * time.Second,
+		)
+	ctx := context.Background()
+	client, err := mongo.Connect(ctx, options)
+	if err != nil {
+		slog.Error("Error connecting to MongoDB", "error", err)
+		panic(err)
+	}
+	mongoClient := &MongoClient{
+		Client: client,
 	}
 	return mongoClient
 }
@@ -48,7 +41,8 @@ func GetMongoDatabase() *mongo.Database {
 	return GetMongoClient().Database(config.Database.MongoDatabase)
 }
 
-func SetupMongo() error {
+// Ensures MongoDB connection works and creates all collections and indexes
+func TestMongo() error {
 	ctx := context.Background()
 	defer ctx.Done()
 

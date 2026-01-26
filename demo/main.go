@@ -40,11 +40,9 @@ func main() {
 		config.Name = name
 		config.ChatID = demo.CreateSlug(name)
 
-		apiKey, err := demo.PromptString("Chave de API da OpenAI", "")
-		if err != nil {
-			log.Fatalf("%s Erro ao obter chave da API: %v\n", red("✗"), err)
+		if err := demo.ConfigureProvider(config); err != nil {
+			log.Fatalf("%s Erro ao configurar provedor: %v\n", red("✗"), err)
 		}
-		config.OpenAIKey = apiKey
 
 		changeFetchConfig, err := demo.PromptYesNo("Deseja alterar as configurações padrão de busca de memórias?")
 		if err != nil {

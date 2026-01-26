@@ -18,11 +18,11 @@ type MemoryRepository struct {
 
 func NewMemoryRepository() *MemoryRepository {
 	return &MemoryRepository{
-		QdrantClient: qdrant.GetQdrantClient(),
+		QdrantClient: qdrant.NewQdrantClient(),
 	}
 }
 
-// Create implements vector.MemoryVectorRepository.
+// Create implements [vector.MemoryVectorRepository].
 func (m *MemoryRepository) Create(
 	ctx context.Context,
 	chatId string,
@@ -61,7 +61,7 @@ func (m *MemoryRepository) Create(
 	return err
 }
 
-// Search implements vector.MemoryVectorRepository.
+// Search implements [vector.MemoryVectorRepository].
 func (m *MemoryRepository) Search(
 	ctx context.Context,
 	chatId string,
@@ -123,11 +123,30 @@ func (m *MemoryRepository) Search(
 
 }
 
-// Deactivate implements vector.MemoryVectorRepository.
+// Deactivate implements [vector.MemoryVectorRepository].
 func (m *MemoryRepository) Deactivate(ctx context.Context, chatId string, id string) error {
 	filter := qdrantClient.Filter{
 		Must: []*qdrantClient.Condition{
 			qdrantClient.NewMatchText("memory_id", id),
+			qdrantClient.NewMatchBool("active", true),
+			qdrantClient.NewMatchText("chat_id", chatId),
+		},
+	}
+	request := qdrantClient.SetPayloadPoints{
+		CollectionName: config.Database.DefaultCollectionName,
+		Payload: map[string]*qdrantClient.Value{
+			"active": qdrantClient.NewValueBool(false),
+		},
+		PointsSelector: qdrantClient.NewPointsSelectorFilter(&filter),
+	}
+	_, err := m.Client.SetPayload(ctx, &request)
+	return err
+}
+
+// DeactivateAll implements [vector.MemoryVectorRepository].
+func (m *MemoryRepository) DeactivateAll(ctx context.Context, chatId string) error {
+	filter := qdrantClient.Filter{
+		Must: []*qdrantClient.Condition{
 			qdrantClient.NewMatchBool("active", true),
 			qdrantClient.NewMatchText("chat_id", chatId),
 		},

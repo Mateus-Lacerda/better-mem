@@ -1,8 +1,12 @@
 package demo
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/manifoldco/promptui"
 )
@@ -82,10 +86,99 @@ func PromptYesNo(label string) (bool, error) {
 	return result == "Sim", nil
 }
 
+type OllamaTagsResponse struct {
+	Models []struct {
+		Name string `json:"name"`
+	} `json:"models"`
+}
+
+func FetchOllamaModels(baseURL string) ([]string, error) {
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Get(fmt.Sprintf("%s/api/tags", baseURL))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("falha ao buscar modelos: status %d", resp.StatusCode)
+	}
+
+	var tagsResponse OllamaTagsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&tagsResponse); err != nil {
+		return nil, err
+	}
+
+	var models []string
+	for _, m := range tagsResponse.Models {
+		models = append(models, m.Name)
+	}
+
+	return models, nil
+}
+
+func ConfigureProvider(config *Config) error {
+	prompt := promptui.Select{
+		Label: "Selecione o Provedor de IA",
+		Items: []string{"OpenAI", "Ollama"},
+	}
+
+	_, result, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	config.Provider = strings.ToLower(result)
+
+	if config.Provider == "openai" {
+		config.OpenAIKey, err = PromptString("Chave de API da OpenAI", config.OpenAIKey)
+		if err != nil {
+			return err
+		}
+	} else if config.Provider == "ollama" {
+		config.OllamaURL, err = PromptString("URL do Ollama", config.OllamaURL)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("Buscando modelos disponíveis no Ollama...")
+		models, err := FetchOllamaModels(config.OllamaURL)
+		if err == nil && len(models) > 0 {
+			promptModel := promptui.Select{
+				Label: "Selecione o Modelo",
+				Items: models,
+			}
+			_, selectedModel, err := promptModel.Run()
+			if err == nil {
+				config.Model = selectedModel
+			} else {
+				fmt.Printf("Seleção cancelada, mantendo modelo atual: %s\n", config.Model)
+			}
+		} else {
+			fmt.Printf("Não foi possível listar modelos (%v). Configure manualmente se necessário.\n", err)
+		}
+	}
+
+	return nil
+}
+
 func ConfigureSettings(config *Config) error {
 	fmt.Println("\n=== Configurações ===")
+
+	change, err := PromptYesNo("Deseja alterar o Provedor de IA?")
+	if err != nil {
+		return err
+	}
+	if change {
+		if err := ConfigureProvider(config); err != nil {
+			return err
+		}
+	}
 	
-	change, err := PromptYesNo("Deseja alterar o Limite de Memórias?")
+	change, err = PromptYesNo("Deseja alterar o Limite de Memórias?")
 	if err != nil {
 		return err
 	}
@@ -164,4 +257,3 @@ func ConfigureSettings(config *Config) error {
 
 	return nil
 }
-

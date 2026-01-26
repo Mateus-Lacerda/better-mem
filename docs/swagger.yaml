@@ -3,6 +3,8 @@ definitions:
     properties:
       external_id:
         type: string
+      id:
+        type: string
     type: object
   core.LongTermMemory:
     properties:
@@ -211,6 +213,22 @@ paths:
       summary: Health Check
       tags:
       - health
+  /memory/chat/{chat_id}/deactivate:
+    put:
+      description: Deactivates all the memories, should be retried on fail since it
+        may leave unwanted data.
+      parameters:
+      - description: Chat ID
+        in: path
+        name: chat_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: Deactivate All Memories
+      tags:
+      - memories
   /memory/chat/{chat_id}/fetch:
     post:
       consumes:

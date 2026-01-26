@@ -50,6 +50,7 @@ func Register(router *gin.Engine) {
 		v1Router.GET("/memory/short-term/chat/:chat_id", memoryHandler.GetShortTermMemories)
 		v1Router.GET("/memory/long-term/chat/:chat_id", memoryHandler.GetLongTermMemories)
 		v1Router.POST("/memory/chat/:chat_id/fetch", memoryHandler.FetchMemories)
+		v1Router.PUT("/memory/chat/:chat_id/deactivate", memoryHandler.DeactivateAllMemories)
 	
 		// Chat
 		v1Router.GET("/chat", chatHandler.GetChats)

@@ -1,10 +1,10 @@
 package task
 
 import (
-	"encoding/json"
-	"time"
 	"better-mem/internal/config"
 	"better-mem/internal/core"
+	"encoding/json"
+	"time"
 
 	"github.com/hibiken/asynq"
 )

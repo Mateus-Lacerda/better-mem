@@ -75,3 +75,9 @@ func (s *LongTermMemoryService) Deactivate(
 ) error {
 	return s.repo.Deactivate(ctx, chatId, memoryId)
 }
+
+func (s *LongTermMemoryService) DeactivateAll(
+	ctx context.Context, chatId string,
+) error {
+	return s.repo.DeactivateAll(ctx, chatId)
+}

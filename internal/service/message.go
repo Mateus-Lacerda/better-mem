@@ -1,31 +1,23 @@
 package service
 
 import (
-	"better-mem/internal/config"
 	"better-mem/internal/core"
 	"better-mem/internal/task"
 	"log/slog"
-
-	"github.com/hibiken/asynq"
 )
 
 func AddMessage(chatId, message string, relatedContext []core.MessageRelatedContext) error {
-	// Debug related context
-	client := asynq.NewClient(asynq.RedisClientOpt{Addr: config.Database.RedisAddress})
-
-	defer client.Close()
-
-	task, err := task.NewClassifyMessageTask(chatId, message, relatedContext)
+	newTask, err := task.NewClassifyMessageTask(chatId, message, relatedContext)
 	if err != nil {
 		return err
 	}
-	info, err := client.Enqueue(task)
+	info, err := task.Enqueue(newTask)
 	if err != nil {
 		return err
 	}
 	slog.Info(
 		"message added to queue",
-		slog.String("type", task.Type()),
+		slog.String("type", newTask.Type()),
 		slog.String("queue", info.Queue),
 		slog.Int("retry", int(info.State)),
 	)

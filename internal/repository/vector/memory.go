@@ -21,4 +21,5 @@ type MemoryVectorRepository interface {
 		threshold float32,
 	) (*[]core.ScoredMemoryVector, error)
 	Deactivate(ctx context.Context, chatId string, id string) error
+	DeactivateAll(ctx context.Context, chatId string) error
 }

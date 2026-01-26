@@ -25,8 +25,12 @@ func NewChatRepository() *ChatRepository {
 }
 
 // Create implements repository.ChatRepository.
-func (r *ChatRepository) Create(ctx context.Context, chat *core.Chat) error {
-	result, err := r.InsertOne(ctx, chat)
+func (r *ChatRepository) Create(ctx context.Context, chat *core.NewChat) error {
+	dbChat := mongo.Chat{ExternalID: chat.ExternalId}
+	result, err := r.InsertOne(ctx, dbChat)
+	if IsMongoDuplicateKeyError(err) {
+		return core.ChatExternalIdAlreadyExists
+	}
 	if err != nil {
 		return err
 	}
@@ -60,11 +64,18 @@ func (r *ChatRepository) GetAll(ctx context.Context) ([]*core.Chat, error) {
 		slog.Error("Error getting all chats", "error", err)
 		return nil, err
 	}
-	var chats []*core.Chat
-	err = result.All(ctx, &chats)
+	var dbChats []*mongo.Chat
+	err = result.All(ctx, &dbChats)
 	if err != nil {
 		slog.Error("Error parsing chats", "error", err)
 		return nil, err
+	}
+	var chats []*core.Chat
+	for _, chat := range dbChats {
+		chats = append(chats, &core.Chat{
+			ExternalId: chat.ExternalID,
+			ID:         chat.ID,
+		})
 	}
 	return chats, nil
 }

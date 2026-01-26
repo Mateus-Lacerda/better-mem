@@ -10,7 +10,9 @@ import (
 type Config struct {
 	Name                  string  `json:"name"`
 	ChatID                string  `json:"chat_id"`
+	Provider              string  `json:"provider"`
 	OpenAIKey             string  `json:"openai_key"`
+	OllamaURL             string  `json:"ollama_url"`
 	APIBaseURL            string  `json:"api_base_url"`
 	Limit                 int     `json:"limit"`
 	VectorSearchLimit     int     `json:"vector_search_limit"`
@@ -22,7 +24,9 @@ type Config struct {
 
 func DefaultConfig() *Config {
 	return &Config{
-		APIBaseURL:            "http://localhost:8080/api/v1",
+		APIBaseURL:            "http://localhost:5042/api/v1",
+		Provider:              "openai",
+		OllamaURL:             "http://localhost:11434",
 		Limit:                 2,
 		VectorSearchLimit:     10,
 		VectorSearchThreshold: 0.6,
@@ -74,6 +78,10 @@ func (c *Config) Print() {
 	fmt.Printf("\n=== Configurações Atuais ===\n")
 	fmt.Printf("Nome: %s\n", c.Name)
 	fmt.Printf("Chat ID: %s\n", c.ChatID)
+	fmt.Printf("Provedor: %s\n", c.Provider)
+	if c.Provider == "ollama" {
+		fmt.Printf("Ollama URL: %s\n", c.OllamaURL)
+	}
 	fmt.Printf("API Base URL: %s\n", c.APIBaseURL)
 	fmt.Printf("Limite de Memórias: %d\n", c.Limit)
 	fmt.Printf("Limite de Busca Vetorial: %d\n", c.VectorSearchLimit)

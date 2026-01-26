@@ -1,6 +1,15 @@
 package main
 
 import (
+	"better-mem/internal/config"
+	"better-mem/internal/database/mongo"
+	"better-mem/internal/database/mongo/repository"
+	"better-mem/internal/database/mongo/uow"
+	vectorRepo "better-mem/internal/database/qdrant/repository"
+	"better-mem/internal/llm/ollama"
+	"better-mem/internal/service"
+	"better-mem/internal/task"
+	"better-mem/internal/task/handler"
 	"fmt"
 	"log/slog"
 	"os"
@@ -8,14 +17,6 @@ import (
 	"runtime"
 	"syscall"
 	"time"
-	"better-mem/internal/config"
-	"better-mem/internal/database/mongo"
-	"better-mem/internal/database/mongo/repository"
-	"better-mem/internal/database/mongo/uow"
-	vectorRepo "better-mem/internal/database/qdrant/repository"
-	"better-mem/internal/service"
-	"better-mem/internal/task"
-	"better-mem/internal/task/handler"
 
 	"github.com/hibiken/asynq"
 )
@@ -51,6 +52,9 @@ func startServer() {
 		},
 	)
 
+	// Providers
+	llmProvider := ollama.NewLLMProvider(config.Llm.BaseUrl, config.Llm.Model)
+
 	// Repositories
 	longTermMemoryRepository := repository.NewLongTermMemoryRepository()
 	shortTermMemoryRepository := repository.NewShortTermMemoryRepository()
@@ -64,12 +68,14 @@ func startServer() {
 	chatService := service.NewChatService(chatRepository)
 	memoryVectorService := service.NewMemoryVectorService(memoryVectorRepository)
 	memoryManagementService := service.NewMemoryManagementService(mongoIntUow)
+	memoryEnhancementService := service.NewMemoryEnhancementService(llmProvider)
 
 	// Handlers
 	messageHandler := handler.NewMessageTaskHandler(
 		longTermMemoryService,
 		shortTermMemoryService,
 		memoryVectorService,
+		memoryEnhancementService,
 	)
 	manageShortTermMemoryHandler := handler.NewMemoryManagementHandler(
 		chatService,

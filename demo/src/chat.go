@@ -9,7 +9,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
-	openai "github.com/sashabaranov/go-openai"
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
 )
 
 type ChatSession struct {
@@ -20,11 +21,28 @@ type ChatSession struct {
 	historyPath string
 }
 
-func NewChatSession(config *Config, apiClient *APIClient, history *ChatHistory, historyPath string) *ChatSession {
+func NewChatSession(
+	config *Config,
+	apiClient *APIClient,
+	history *ChatHistory,
+	historyPath string,
+) *ChatSession {
+	var clientOptions []option.RequestOption
+
+	if config.Provider == "ollama" {
+		clientOptions = append(clientOptions, option.WithBaseURL(config.OllamaURL+"/v1"))
+		clientOptions = append(clientOptions, option.WithAPIKey("ollama"))
+	} else {
+		clientOptions = append(clientOptions, option.WithAPIKey(config.OpenAIKey))
+		clientOptions = append(clientOptions, option.WithBaseURL(config.APIBaseURL))
+	}
+
+	client := openai.NewClient(clientOptions...)
+
 	return &ChatSession{
 		config:       config,
 		apiClient:    apiClient,
-		openaiClient: openai.NewClient(config.OpenAIKey),
+		openaiClient: &client,
 		history:      history,
 		historyPath:  historyPath,
 	}
@@ -133,45 +151,49 @@ func (s *ChatSession) Start() error {
 }
 
 func (s *ChatSession) generateResponse(userInput string, memories []ScoredMemory) (string, error) {
-	systemPrompt := "You are a helpful assistant"
+	var systemPrompt strings.Builder;
+
+	systemPrompt.WriteString("You are a helpful assistant")
 	
 	if len(memories) > 0 {
-		systemPrompt += fmt.Sprintf("\n\nThese are memories you have from past conversations with %s:\n", s.config.Name)
+		fmt.Fprintf(&systemPrompt, "\n\nThese are memories you have from past conversations with %s:\n", s.config.Name)
 		sort.Slice(memories, func(i, j int) bool {
 			return memories[i].Score > memories[j].Score
 		})
 		for _, mem := range memories {
-			systemPrompt += fmt.Sprintf("- %s (relevance: %.2f, created at: %s)\n", mem.Text, mem.Score, mem.CreatedAt)
-			systemPrompt += "  Related context:\n"
+			fmt.Fprintf(&systemPrompt, "- %s (relevance: %.2f, created at: %s)\n", mem.Text, mem.Score, mem.CreatedAt)
+			systemPrompt .WriteString("  Related context:\n")
 			for _, context := range mem.RelatedContext {
-				systemPrompt += fmt.Sprintf("  - From: %s\n    %s\n", context.User, context.Context)
+				fmt.Fprintf(&systemPrompt, "  - From: %s\n    %s\n", context.User, context.Context)
 			}
 		}
 	}
 
-	messages := []openai.ChatCompletionMessage{
-		{
-			Role:    openai.ChatMessageRoleSystem,
-			Content: systemPrompt,
-		},
+	messages := []openai.ChatCompletionMessageParamUnion{
+		openai.SystemMessage(systemPrompt.String()),
 	}
 
 	historyMessages := s.history.GetMessages(s.config.ChatID, s.config.ChatHistoryBuffer)
 	for _, msg := range historyMessages {
-		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		})
+		switch msg.Role {
+		case "user":
+			messages = append(messages, openai.UserMessage(
+				msg.Content,
+			))
+		case "assistant":
+			messages = append(messages, openai.AssistantMessage(
+				msg.Content,
+			))
+		}
 	}
 
-	messages = append(messages, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
-		Content: userInput,
-	})
+	messages = append(messages, openai.UserMessage(
+		userInput,
+	))
 
-	resp, err := s.openaiClient.CreateChatCompletion(
+	resp, err := s.openaiClient.Chat.Completions.New(
 		context.Background(),
-		openai.ChatCompletionRequest{
+		openai.ChatCompletionNewParams{
 			Model:    s.config.Model,
 			Messages: messages,
 		},

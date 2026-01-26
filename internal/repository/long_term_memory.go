@@ -17,4 +17,5 @@ type LongTermMemoryRepository interface {
 	GetScored(ctx context.Context, chatId string, memoriesIds []string) ([]*core.ScoredMemory, error)
 	RegisterUsage(ctx context.Context, chatId string, memoryId string) error
 	Deactivate(ctx context.Context, chatId string, memoryId string) error
+	DeactivateAll(ctx context.Context, chatId string) error
 }

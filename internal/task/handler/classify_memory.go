@@ -1,14 +1,14 @@
 package handler
 
 import (
-	"context"
-	"encoding/json"
-	"log/slog"
 	"better-mem/internal/config"
 	"better-mem/internal/core"
 	protos "better-mem/internal/grpc_client"
 	"better-mem/internal/service"
 	"better-mem/internal/task"
+	"context"
+	"encoding/json"
+	"log/slog"
 
 	"github.com/hibiken/asynq"
 )
@@ -17,17 +17,20 @@ type MessageTaskHandler struct {
 	longTermMemoryService  *service.LongTermMemoryService
 	shortTermMemoryService *service.ShortTermMemoryService
 	memoryVectorService    *service.MemoryVectorService
+	memoryEnhancementService *service.MemoryEnhancementService
 }
 
 func NewMessageTaskHandler(
 	longTermMemoryService *service.LongTermMemoryService,
 	shortTermMemoryService *service.ShortTermMemoryService,
 	memoryVectorService *service.MemoryVectorService,
+	memoryEnhancementService *service.MemoryEnhancementService,
 ) *MessageTaskHandler {
 	return &MessageTaskHandler{
 		longTermMemoryService:  longTermMemoryService,
 		shortTermMemoryService: shortTermMemoryService,
 		memoryVectorService:    memoryVectorService,
+		memoryEnhancementService: memoryEnhancementService,
 	}
 }
 
@@ -56,15 +59,18 @@ func (h *MessageTaskHandler) checkForSimilarMemory(
 
 // ClassifyMemoryTaskHandler handles the heaviest task:
 // Classify the message type (long term, short term, none)
+// TODO: Fix the memory enhancement and remove the debug slogs
 func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 	ctx context.Context, t *asynq.Task,
 ) error {
+	hasEnhancementCapabilites := h.memoryEnhancementService != nil
+
 	var payload task.ClassifyMessagePayload
 	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 
-	labeledMessage, err := protos.Predict(payload.Message, payload.ChatId, true)
+	labeledMessage, err := protos.Predict(payload.Message, payload.ChatId, !hasEnhancementCapabilites)
 	if err != nil {
 		slog.Error("Error predicting message", "error", err)
 		return err
@@ -73,7 +79,27 @@ func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 	if labeledMessage.Label == core.NoMemory {
 		return nil
 	}
+	
+	if hasEnhancementCapabilites {
+		originalMessage := labeledMessage.Message
+		enhancedMemory := h.memoryEnhancementService.EnhanceMemory(originalMessage)
+		embeddings, err := protos.Embed(enhancedMemory)
+		slog.Error("embedding error", "err", err)
+		if err == nil {
+			slog.Info("updating", "labeledMessage", labeledMessage)
+			labeledMessage.Message = enhancedMemory
+			labeledMessage.MessageEmbedding = embeddings
+		}
 
+		labeledMessage.RelatedContext = append(
+			labeledMessage.RelatedContext,
+			core.MessageRelatedContext{
+				Context: originalMessage,
+				User: "user",
+			},
+		)
+	}
+	slog.Info("final", "labeledMessage", labeledMessage)
 	similarMemory, err := h.checkForSimilarMemory(
 		ctx, payload.ChatId, labeledMessage.MessageEmbedding,
 	)
@@ -99,26 +125,32 @@ func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 	storeMemoryPayload := task.StoreMemoryPayload{
 		LabeledMessage: *labeledMessage,
 	}
+	slog.Info("store", "storeMemoryPayload", storeMemoryPayload)
 	payloadBytes, err := json.Marshal(storeMemoryPayload)
 	if err != nil {
 		return err
 	}
-	storeTask := asynq.NewTask(task.StoreLongTermMemoryTaskName, payloadBytes)
 
-	switch labeledMessage.Label {
-	case core.LongTerm:
-		if err := h.HandleStoreLongTermMemoryTask(ctx, storeTask); err != nil {
-			slog.Error("ClassifyMemoryTaskHandler", "error", err)
-			return err
+	storeTaskName, err := func() (string, error) {
+		switch labeledMessage.Label {
+		case core.LongTerm:
+			return task.StoreLongTermMemoryTaskName, nil
+		case core.ShortTerm:
+			return task.StoreShortTermMemoryTaskName, nil
+		default:
+			return "", core.UnexpectedClassificationError
 		}
-	case core.ShortTerm:
-		if err := h.HandleStoreShortTermMemoryTask(ctx, storeTask); err != nil {
-			slog.Error("ClassifyMemoryTaskHandler", "error", err)
-			return err
-		}
+	}()
+
+	if err != nil {
+		return err
 	}
 
-	slog.Info("ClassifyMemoryTaskHandler", "label", labeledMessage.Label)
+	_, err = task.Enqueue(asynq.NewTask(storeTaskName, payloadBytes))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -17,17 +17,16 @@ const apiPort = "5042"
 // @title Better Mem API
 // @version 1.0
 // @description This is the API for the Better Mem project.
-
 // @contact.name Mateus Lacerda
 // @contact.email mateuslacerda253@gmail.com
 func main() {
 	slog.Info("api", "message", "connecting to mongo")
-	if err := mongo.SetupMongo(); err != nil {
+	if err := mongo.TestMongo(); err != nil {
 		slog.Error("failed to connect to mongo", "error", err)
 		return
 	}
 
-	if err := qdrant.SetupQdrant(); err != nil {
+	if err := qdrant.TestQdrant(); err != nil {
 		slog.Error("failed to connect to qdrant", "error", err)
 		return
 	}

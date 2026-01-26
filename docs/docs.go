@@ -123,6 +123,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/memory/chat/{chat_id}/deactivate": {
+            "put": {
+                "description": "Deactivates all the memories, should be retried on fail since it may leave unwanted data.",
+                "tags": [
+                    "memories"
+                ],
+                "summary": "Deactivate All Memories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat ID",
+                        "name": "chat_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/memory/chat/{chat_id}/fetch": {
             "post": {
                 "description": "Fetch memories for a given chat.",
@@ -309,6 +332,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "external_id": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 }
             }

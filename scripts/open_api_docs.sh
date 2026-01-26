@@ -3,4 +3,10 @@
 
 url="http://localhost:5042/swagger/v1/index.html#/"
 
-xdg-open $url
+name=$(uname -s)
+
+if [[ "$name" == "Linux" ]]; then
+    xdg-open $url
+elif [[ "$name" == "Darwin" ]]; then
+    open $url
+fi
