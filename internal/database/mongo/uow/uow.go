@@ -1,11 +1,11 @@
 package uow
 
 import (
-	"context"
+	"better-mem/internal/database/mongo"
+	mongoRepository "better-mem/internal/database/mongo/repository"
 	"better-mem/internal/repository"
 	"better-mem/internal/uow"
-	mongoRepository "better-mem/internal/database/mongo/repository"
-	"better-mem/internal/database/mongo"
+	"context"
 
 	mongoClient "go.mongodb.org/mongo-driver/mongo"
 )
@@ -16,7 +16,7 @@ type MongoUnitOfWork[T any] struct {
 
 // Do implements uow.UnitOfWork.
 func (m *MongoUnitOfWork[T]) Do(
-	ctx context.Context, fn func(repos repository.AllRepositories)(T, error),
+	ctx context.Context, fn func(repos repository.AllRepositories) (T, error),
 ) (T, error) {
 	transactionResult := *new(T)
 	sess, err := m.Database.Client().StartSession()
@@ -31,7 +31,7 @@ func (m *MongoUnitOfWork[T]) Do(
 	result, err := sess.WithTransaction(
 		ctx,
 		func(sessCtx mongoClient.SessionContext) (any, error) {
-			return fn(m.Repositories())
+			return fn(m.Repositories(sessCtx))
 		},
 	)
 	if err != nil {
@@ -41,11 +41,11 @@ func (m *MongoUnitOfWork[T]) Do(
 }
 
 // Repositories implements uow.UnitOfWork.
-func (m *MongoUnitOfWork[T]) Repositories() repository.AllRepositories {
+func (m *MongoUnitOfWork[T]) Repositories(_ any) repository.AllRepositories {
 	return repository.AllRepositories{
-		Chat: mongoRepository.NewChatRepository(),
+		Chat:            mongoRepository.NewChatRepository(),
 		ShortTermMemory: mongoRepository.NewShortTermMemoryRepository(),
-		LongTermMemory: mongoRepository.NewLongTermMemoryRepository(),
+		LongTermMemory:  mongoRepository.NewLongTermMemoryRepository(),
 	}
 }
 
@@ -57,4 +57,4 @@ func NewUnitOfWork[T any](
 	}
 }
 
-var _ uow.UnitOfWork[any] = (*MongoUnitOfWork[any])(nil)
+var _ uow.UnitOfWork[any, any] = (*MongoUnitOfWork[any])(nil)

@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"context"
-	"log/slog"
-	"sync"
 	"better-mem/internal/config"
 	"better-mem/internal/core"
 	"better-mem/internal/service"
-
-	"github.com/hibiken/asynq"
+	"context"
+	"log/slog"
+	"sync"
 )
 
 type MemoryManagementHandler struct {
@@ -66,8 +64,8 @@ func (m *MemoryManagementHandler) ManageShortTermMemory(
 	}
 }
 
-func (m *MemoryManagementHandler) HandleManageMemory(
-	ctx context.Context, t *asynq.Task,
+func (m *MemoryManagementHandler) handleManageMemory(
+	ctx context.Context,
 ) error {
 	chats, err := m.chatService.GetAll(ctx)
 	if err != nil {

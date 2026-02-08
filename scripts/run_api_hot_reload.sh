@@ -11,4 +11,4 @@ if [ ! -d "bin" ]; then
     mkdir bin
 fi
 
-air --build.cmd "go build -o bin/api cmd/api/main.go" --build.bin "./bin/api"
+air --build.cmd "go build -tags=local -o bin/api cmd/api" --build.bin "./bin/api"

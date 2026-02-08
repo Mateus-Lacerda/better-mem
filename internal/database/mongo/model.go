@@ -32,6 +32,7 @@ func ChatConfig() chatConfig {
 	}
 }
 
+// TODO: Add related context here
 type LongTermMemory struct {
 	ID          string `bson:"_id,omitempty"`
 	Memory      string `bson:"memory"`

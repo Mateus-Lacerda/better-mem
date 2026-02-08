@@ -41,8 +41,8 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
@@ -74,7 +74,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/core.Chat"
+                            "$ref": "#/definitions/core.NewChat"
                         }
                     }
                 ],
@@ -420,6 +420,14 @@ const docTemplate = `{
                 },
                 "user": {
                     "description": "User that generated the context, might be a name\nor simply \"user and assistant\"",
+                    "type": "string"
+                }
+            }
+        },
+        "core.NewChat": {
+            "type": "object",
+            "properties": {
+                "external_id": {
                     "type": "string"
                 }
             }

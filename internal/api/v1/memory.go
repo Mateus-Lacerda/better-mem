@@ -3,6 +3,7 @@ package v1
 import (
 	"better-mem/internal/core"
 	"better-mem/internal/service"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -12,17 +13,20 @@ import (
 type MemoryHandler struct {
 	shortTermMemoryService *service.ShortTermMemoryService
 	longTermMemoryService  *service.LongTermMemoryService
+	chatService *service.ChatService
 	memoryService          *service.MemoryService
 }
 
 func NewMemoryHandler(
 	shortTermMemoryService *service.ShortTermMemoryService,
 	longTermMemoryService *service.LongTermMemoryService,
+	chatService *service.ChatService,
 	memoryService *service.MemoryService,
 ) *MemoryHandler {
 	return &MemoryHandler{
 		shortTermMemoryService: shortTermMemoryService,
 		longTermMemoryService:  longTermMemoryService,
+		chatService: chatService,
 		memoryService:          memoryService,
 	}
 }
@@ -42,14 +46,25 @@ func (h *MemoryHandler) FetchMemories(context *gin.Context) {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	chatId := context.Param("chat_id")
-	if chatId == "" {
+	externalId := context.Param("chat_id")
+	if externalId == "" {
 		context.JSON(400, gin.H{"error": "Invalid chat id"})
+		return
+	}
+	chatId, err := h.chatService.GetByExternalId(context, externalId)
+	if err == core.ChatNotFound {
+		slog.Info("Chat not found", "external_id", externalId)
+		context.JSON(400, gin.H{"error": "Chat not found"})
+		return
+	}
+	if chatId == nil || err != nil {
+		slog.Error("Error getting chat", "error", err)
+		context.JSON(500, gin.H{"error": "Error getting chat"})
 		return
 	}
 	memories, err := h.memoryService.Fetch(
 		context,
-		chatId,
+		*chatId,
 		request.Text,
 		request.Limit,
 		request.VectorSearchLimit,

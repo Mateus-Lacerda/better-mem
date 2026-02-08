@@ -1,12 +1,12 @@
 package uow
 
 import (
-	"context"
 	"better-mem/internal/repository"
+	"context"
 )
 
-type UnitOfWork[T any] interface {
-	Repositories() repository.AllRepositories
+type UnitOfWork[T any, C any] interface {
+	Repositories(tx C) repository.AllRepositories
 
 	Do(
 		ctx context.Context, fn func(

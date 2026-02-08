@@ -8,12 +8,11 @@ import (
 	"time"
 )
 
-
 type MemoryManagementService struct {
-	uow uow.UnitOfWork[int]
+	uow uow.UnitOfWork[int, any]
 }
 
-func NewMemoryManagementService(uow uow.UnitOfWork[int]) *MemoryManagementService {
+func NewMemoryManagementService(uow uow.UnitOfWork[int, any]) *MemoryManagementService {
 	return &MemoryManagementService{uow: uow}
 }
 
@@ -59,11 +58,11 @@ func (s *MemoryManagementService) FindAndPromote(
 			memory, err := repos.LongTermMemory.Create(
 				ctx,
 				&core.NewLongTermMemory{
-					Memory: memory.Memory,
-					ChatId: memory.ChatId,
+					Memory:      memory.Memory,
+					ChatId:      memory.ChatId,
 					AccessCount: memory.AccessCount,
-					CreatedAt: memory.CreatedAt,
-					Active: true,
+					CreatedAt:   memory.CreatedAt,
+					Active:      true,
 				},
 			)
 			if err != nil {

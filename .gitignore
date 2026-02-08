@@ -11,3 +11,6 @@ tmp/**
 **/__pycache__/**
 *.py[codz]
 *$py.class
+
+
+.idea

@@ -7,20 +7,11 @@ import (
 )
 
 func AddMessage(chatId, message string, relatedContext []core.MessageRelatedContext) error {
-	newTask, err := task.NewClassifyMessageTask(chatId, message, relatedContext)
+	err := task.NewClassifyMessageTask(chatId, message, relatedContext)
 	if err != nil {
 		return err
 	}
-	info, err := task.Enqueue(newTask)
-	if err != nil {
-		return err
-	}
-	slog.Info(
-		"message added to queue",
-		slog.String("type", newTask.Type()),
-		slog.String("queue", info.Queue),
-		slog.Int("retry", int(info.State)),
-	)
+	slog.Info("message added to queue")
 
 	return nil
 }

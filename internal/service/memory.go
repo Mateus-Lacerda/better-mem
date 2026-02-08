@@ -1,8 +1,6 @@
 package service
 
 import (
-	// "context"
-	// "better-mem/internal/core"
 	"better-mem/internal/core"
 	protos "better-mem/internal/grpc_client"
 	"better-mem/internal/repository"

@@ -76,32 +76,34 @@ func (s *ChatSession) Start() error {
 			continue
 		}
 
-		time.Sleep(2 * time.Second)
-
-		memories, err := s.apiClient.FetchMemories(s.config.ChatID, MemoryFetchRequest{
-			Text:                  userInput,
-			Limit:                 s.config.Limit,
-			VectorSearchLimit:     s.config.VectorSearchLimit,
-			VectorSearchThreshold: s.config.VectorSearchThreshold,
-			LongTermThreshold:     s.config.LongTermThreshold,
-		})
-		if err != nil {
-			fmt.Printf("Error fetching memories from better-mem: %v\n", err)
-		}
-
-
-		// Send last 2 messages as related context to better-mem
-		var relatedContext []MessageRelatedContext
-		historyMessages := s.history.GetMessages(s.config.ChatID, 2)
-		for _, msg := range historyMessages {
-			relatedContext = append(relatedContext, MessageRelatedContext{
-				User:    msg.Role,
-				Context: msg.Content,
+		var memories []ScoredMemory
+		err = s.withBetterMemLoading(func() error {
+			var errFetch error
+			memories, errFetch = s.apiClient.FetchMemories(s.config.ChatID, MemoryFetchRequest{
+				Text:                  userInput,
+				Limit:                 s.config.Limit,
+				VectorSearchLimit:     s.config.VectorSearchLimit,
+				VectorSearchThreshold: s.config.VectorSearchThreshold,
+				LongTermThreshold:     s.config.LongTermThreshold,
 			})
-		}
+			if errFetch != nil {
+				return errFetch
+			}
 
-		if err := s.apiClient.SendMessage(s.config.ChatID, userInput, relatedContext); err != nil {
-			fmt.Printf("Error sending message to better-mem: %v\n", err)
+			var relatedContext []MessageRelatedContext
+			historyMessages := s.history.GetMessages(s.config.ChatID, 2)
+			for _, msg := range historyMessages {
+				relatedContext = append(relatedContext, MessageRelatedContext{
+					User:    msg.Role,
+					Context: msg.Content,
+				})
+			}
+
+			return s.apiClient.SendMessage(s.config.ChatID, userInput, relatedContext)
+		})
+
+		if err != nil {
+			fmt.Printf("%s %v\n", color.New(color.FgRed).Sprint("Error better-mem:"), err)
 		}
 
 		if len(memories) > 0 {
@@ -131,13 +133,13 @@ func (s *ChatSession) Start() error {
 			fmt.Println()
 		}
 
-		aiResponse, err := s.generateResponse(userInput, memories)
+		aiResponse, err := s.withLLMLoading(func(yield func(string)) (string, error) {
+			return s.generateResponseStreaming(userInput, memories, yield)
+		})
 		if err != nil {
 			fmt.Printf("Erro ao gerar resposta: %v\n", err)
 			continue
 		}
-
-		fmt.Printf("%s %s\n\n", green("AI:"), aiResponse)
 
 		s.history.AddMessage(s.config.ChatID, "user", userInput)
 		s.history.AddMessage(s.config.ChatID, "assistant", aiResponse)
@@ -148,6 +150,172 @@ func (s *ChatSession) Start() error {
 	}
 
 	return nil
+}
+
+func (s *ChatSession) withBetterMemLoading(action func() error) error {
+	start := time.Now()
+	done := make(chan bool)
+	
+	cyan := color.New(color.FgCyan).SprintFunc()
+	
+	frames := []string{
+		"( ●    )",
+		"(  ●   )",
+		"(   ●  )",
+		"(    ● )",
+		"(     ●)",
+		"(    ● )",
+		"(   ●  )",
+		"(  ●   )",
+		"( ●    )",
+		"(●     )",
+	}
+
+	go func() {
+		i := 0
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				fmt.Printf("\r%s %s", cyan(frames[i%len(frames)]), cyan("better-mem is searching..."))
+				i++
+				time.Sleep(80 * time.Millisecond)
+			}
+		}
+	}()
+
+	err := action()
+	done <- true
+	duration := time.Since(start)
+	
+	// Clear line and print final result
+	fmt.Printf("\r\033[2K\r")
+	fmt.Printf("%.2fs %s\n", duration.Seconds(), "􀯐")
+	
+	return err
+}
+
+func (s *ChatSession) withLLMLoading(action func(func(string)) (string, error)) (string, error) {
+	start := time.Now()
+	done := make(chan bool)
+	
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				fmt.Printf("\r%.1fs ", time.Since(start).Seconds())
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+	}()
+
+	green := color.New(color.FgGreen).SprintFunc()
+	var fullResponse strings.Builder
+	var firstChunk bool = true
+
+	res, err := action(func(chunk string) {
+		if firstChunk {
+			done <- true
+			duration := time.Since(start)
+			fmt.Printf("\r\033[2K\r")
+			fmt.Printf("%.2fs %s\n", duration.Seconds(), "􀌥")
+			fmt.Printf("%s ", green("AI:"))
+			firstChunk = false
+		}
+		fmt.Print(chunk)
+		fullResponse.WriteString(chunk)
+	})
+
+	if err != nil {
+		if firstChunk {
+			done <- true
+		}
+		return "", err
+	}
+
+	duration := time.Since(start)
+	fmt.Println()
+
+	// Simple token estimation (words * 1.3 as a rule of thumb for English/Code)
+	words := len(strings.Fields(fullResponse.String()))
+	tokenCount := int(float64(words) * 1.3)
+	if tokenCount == 0 && fullResponse.Len() > 0 {
+		tokenCount = 1
+	}
+	
+	tps := float64(tokenCount) / duration.Seconds()
+	fmt.Printf("%s %.2f t/s\n\n", color.New(color.FgHiBlack).Sprint("TPS:"), tps)
+
+	return res, nil
+}
+
+func (s *ChatSession) generateResponseStreaming(userInput string, memories []ScoredMemory, yield func(string)) (string, error) {
+	var systemPrompt strings.Builder;
+
+	systemPrompt.WriteString("You are a helpful assistant")
+	
+	if len(memories) > 0 {
+		fmt.Fprintf(&systemPrompt, "\n\nThese are memories you have from past conversations with %s:\n", s.config.Name)
+		sort.Slice(memories, func(i, j int) bool {
+			return memories[i].Score > memories[j].Score
+		})
+		for _, mem := range memories {
+			fmt.Fprintf(&systemPrompt, "- %s (relevance: %.2f, created at: %s)\n", mem.Text, mem.Score, mem.CreatedAt)
+			systemPrompt .WriteString("  Related context:\n")
+			for _, context := range mem.RelatedContext {
+				fmt.Fprintf(&systemPrompt, "  - From: %s\n    %s\n", context.User, context.Context)
+			}
+		}
+	}
+
+	messages := []openai.ChatCompletionMessageParamUnion{
+		openai.SystemMessage(systemPrompt.String()),
+	}
+
+	historyMessages := s.history.GetMessages(s.config.ChatID, s.config.ChatHistoryBuffer)
+	for _, msg := range historyMessages {
+		switch msg.Role {
+		case "user":
+			messages = append(messages, openai.UserMessage(
+				msg.Content,
+			))
+		case "assistant":
+			messages = append(messages, openai.AssistantMessage(
+				msg.Content,
+			))
+		}
+	}
+
+	messages = append(messages, openai.UserMessage(
+		userInput,
+	))
+
+	stream := s.openaiClient.Chat.Completions.NewStreaming(
+		context.Background(),
+		openai.ChatCompletionNewParams{
+			Model:    s.config.Model,
+			Messages: messages,
+		},
+	)
+
+	var fullResponse strings.Builder
+	for stream.Next() {
+		chunk := stream.Current()
+		if len(chunk.Choices) > 0 {
+			content := chunk.Choices[0].Delta.Content
+			yield(content)
+			fullResponse.WriteString(content)
+		}
+	}
+
+	if err := stream.Err(); err != nil {
+		return "", err
+	}
+
+	return fullResponse.String(), nil
 }
 
 func (s *ChatSession) generateResponse(userInput string, memories []ScoredMemory) (string, error) {

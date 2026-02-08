@@ -1,12 +1,8 @@
 package task
 
 import (
-	"better-mem/internal/config"
 	"better-mem/internal/core"
 	"encoding/json"
-	"time"
-
-	"github.com/hibiken/asynq"
 )
 
 // Definitions
@@ -27,73 +23,12 @@ type StoreMemoryPayload struct {
 	core.LabeledMessage `json:"embedded"`
 }
 
-func NewClassifyMessageTask(
+func getClassifiyMessageTaskPayload(
 	chatId, message string, relatedContext []core.MessageRelatedContext,
-) (*asynq.Task, error) {
-	payload, err := json.Marshal(
+) ([]byte, error) {
+	return json.Marshal(
 		ClassifyMessagePayload{
 			core.NewMessage{ChatId: chatId, Message: message, RelatedContext: relatedContext},
 		},
 	)
-	if err != nil {
-		return nil, err
-	}
-	return asynq.NewTask(
-		ClassifyMessageTaskName,
-		payload,
-		asynq.MaxRetry(config.Worker.MaxRetry),
-		asynq.Timeout(time.Duration(config.Worker.Timeout)*time.Second),
-	), nil
-}
-
-func NewStoreLongTermMemoryTask(
-	chatId,
-	message string,
-	memoryType core.MemoryTypeEnum,
-	messageEmbedding []float32,
-) (*asynq.Task, error) {
-	payload, err := json.Marshal(
-		StoreMemoryPayload{
-			core.LabeledMessage{
-				NewMessage:       core.NewMessage{ChatId: chatId, Message: message},
-				Label:            memoryType,
-				MessageEmbedding: messageEmbedding,
-			},
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return asynq.NewTask(
-		StoreLongTermMemoryTaskName,
-		payload,
-		asynq.MaxRetry(config.Worker.MaxRetry),
-		asynq.Timeout(time.Duration(config.Worker.Timeout)*time.Second),
-	), nil
-}
-
-func NewStoreShortTermMemoryTask(
-	chatId,
-	message string,
-	memoryType core.MemoryTypeEnum,
-	messageEmbedding []float32,
-) (*asynq.Task, error) {
-	payload, err := json.Marshal(
-		StoreMemoryPayload{
-			core.LabeledMessage{
-				NewMessage:       core.NewMessage{ChatId: chatId, Message: message},
-				Label:            memoryType,
-				MessageEmbedding: messageEmbedding,
-			},
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return asynq.NewTask(
-		StoreShortTermMemoryTaskName,
-		payload,
-		asynq.MaxRetry(config.Worker.MaxRetry),
-		asynq.Timeout(time.Duration(config.Worker.Timeout)*time.Second),
-	), nil
 }

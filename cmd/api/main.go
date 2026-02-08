@@ -3,8 +3,6 @@ package main
 import (
 	docs "better-mem/docs"
 	v1 "better-mem/internal/api/v1"
-	"better-mem/internal/database/mongo"
-	"better-mem/internal/database/qdrant"
 	"log/slog"
 
 	"github.com/gin-gonic/gin"
@@ -20,14 +18,7 @@ const apiPort = "5042"
 // @contact.name Mateus Lacerda
 // @contact.email mateuslacerda253@gmail.com
 func main() {
-	slog.Info("api", "message", "connecting to mongo")
-	if err := mongo.TestMongo(); err != nil {
-		slog.Error("failed to connect to mongo", "error", err)
-		return
-	}
-
-	if err := qdrant.TestQdrant(); err != nil {
-		slog.Error("failed to connect to qdrant", "error", err)
+	if err := setup(); err != nil {
 		return
 	}
 

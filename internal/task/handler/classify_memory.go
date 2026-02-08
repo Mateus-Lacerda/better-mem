@@ -9,14 +9,12 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
-
-	"github.com/hibiken/asynq"
 )
 
 type MessageTaskHandler struct {
-	longTermMemoryService  *service.LongTermMemoryService
-	shortTermMemoryService *service.ShortTermMemoryService
-	memoryVectorService    *service.MemoryVectorService
+	longTermMemoryService    *service.LongTermMemoryService
+	shortTermMemoryService   *service.ShortTermMemoryService
+	memoryVectorService      *service.MemoryVectorService
 	memoryEnhancementService *service.MemoryEnhancementService
 }
 
@@ -27,9 +25,9 @@ func NewMessageTaskHandler(
 	memoryEnhancementService *service.MemoryEnhancementService,
 ) *MessageTaskHandler {
 	return &MessageTaskHandler{
-		longTermMemoryService:  longTermMemoryService,
-		shortTermMemoryService: shortTermMemoryService,
-		memoryVectorService:    memoryVectorService,
+		longTermMemoryService:    longTermMemoryService,
+		shortTermMemoryService:   shortTermMemoryService,
+		memoryVectorService:      memoryVectorService,
 		memoryEnhancementService: memoryEnhancementService,
 	}
 }
@@ -60,15 +58,13 @@ func (h *MessageTaskHandler) checkForSimilarMemory(
 // ClassifyMemoryTaskHandler handles the heaviest task:
 // Classify the message type (long term, short term, none)
 // TODO: Fix the memory enhancement and remove the debug slogs
-func (h *MessageTaskHandler) HandleClassifyMemoryTask(
-	ctx context.Context, t *asynq.Task,
+func (h *MessageTaskHandler) handleClassifyMemoryTask(
+	ctx context.Context,
+	payload task.ClassifyMessagePayload,
+	enqueueFunc func(string, []byte) error,
 ) error {
+	slog.Info("handleClassifyMemoryTask", "payload", payload)
 	hasEnhancementCapabilites := h.memoryEnhancementService != nil
-
-	var payload task.ClassifyMessagePayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
-		return err
-	}
 
 	labeledMessage, err := protos.Predict(payload.Message, payload.ChatId, !hasEnhancementCapabilites)
 	if err != nil {
@@ -79,7 +75,7 @@ func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 	if labeledMessage.Label == core.NoMemory {
 		return nil
 	}
-	
+
 	if hasEnhancementCapabilites {
 		originalMessage := labeledMessage.Message
 		enhancedMemory := h.memoryEnhancementService.EnhanceMemory(originalMessage)
@@ -95,7 +91,7 @@ func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 			labeledMessage.RelatedContext,
 			core.MessageRelatedContext{
 				Context: originalMessage,
-				User: "user",
+				User:    "user",
 			},
 		)
 	}
@@ -146,8 +142,7 @@ func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 		return err
 	}
 
-	_, err = task.Enqueue(asynq.NewTask(storeTaskName, payloadBytes))
-	if err != nil {
+	if err = enqueueFunc(storeTaskName, payloadBytes); err != nil {
 		return err
 	}
 
@@ -155,14 +150,10 @@ func (h *MessageTaskHandler) HandleClassifyMemoryTask(
 }
 
 // Saves the message as long term memory
-func (h *MessageTaskHandler) HandleStoreLongTermMemoryTask(
-	ctx context.Context, t *asynq.Task,
+func (h *MessageTaskHandler) handleStoreLongTermMemoryTask(
+	ctx context.Context,
+	payload task.StoreMemoryPayload,
 ) error {
-	var payload task.StoreMemoryPayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
-		slog.Error("HandleStoreLongTermMemoryTask", "error", err)
-		return err
-	}
 	createdMemory, err := h.longTermMemoryService.Create(
 		ctx,
 		payload.Message,
@@ -187,14 +178,10 @@ func (h *MessageTaskHandler) HandleStoreLongTermMemoryTask(
 }
 
 // Saves the message as short term memory
-func (h *MessageTaskHandler) HandleStoreShortTermMemoryTask(
-	ctx context.Context, t *asynq.Task,
+func (h *MessageTaskHandler) handleStoreShortTermMemoryTask(
+	ctx context.Context,
+	payload task.StoreMemoryPayload,
 ) error {
-	var payload task.StoreMemoryPayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
-		slog.Error("HandleStoreShortTermMemoryTask", "error", err)
-		return err
-	}
 	createdMemory, err := h.shortTermMemoryService.Create(
 		ctx,
 		payload.Message,

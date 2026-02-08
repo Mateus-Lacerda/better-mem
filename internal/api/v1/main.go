@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"better-mem/internal/database/mongo/repository"
-	vectorRepo "better-mem/internal/database/qdrant/repository"
 	"better-mem/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -19,14 +17,14 @@ func HealthCheck(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "OK", "version": "1.0"})
 }
 
-
 func Register(router *gin.Engine) {
 	v1Router := router.Group("/api/v1")
 	{
-		chatRepository := repository.NewChatRepository()
-		longTermMemoryRepository := repository.NewLongTermMemoryRepository()
-		shortTermMemoryRepository := repository.NewShortTermMemoryRepository()
-		memoryVectorRepository := vectorRepo.NewMemoryRepository()
+		chatRepository,
+			longTermMemoryRepository,
+			shortTermMemoryRepository,
+			memoryVectorRepository := getRepositories()
+
 		chatService := service.NewChatService(chatRepository)
 		longTermMemoryService := service.NewLongTermMemoryService(longTermMemoryRepository, chatRepository)
 		shortTermMemoryService := service.NewShortTermMemoryService(shortTermMemoryRepository, chatRepository)
@@ -38,6 +36,7 @@ func Register(router *gin.Engine) {
 		memoryHandler := NewMemoryHandler(
 			shortTermMemoryService,
 			longTermMemoryService,
+			chatService,
 			memoryService,
 		)
 		chatHandler := NewChatHandler(chatService)
@@ -51,11 +50,11 @@ func Register(router *gin.Engine) {
 		v1Router.GET("/memory/long-term/chat/:chat_id", memoryHandler.GetLongTermMemories)
 		v1Router.POST("/memory/chat/:chat_id/fetch", memoryHandler.FetchMemories)
 		v1Router.PUT("/memory/chat/:chat_id/deactivate", memoryHandler.DeactivateAllMemories)
-	
+
 		// Chat
 		v1Router.GET("/chat", chatHandler.GetChats)
 		v1Router.POST("/chat", chatHandler.CreateChat)
-		
+
 		// Message
 		v1Router.POST("/message", messageHandler.AddMessage)
 	}

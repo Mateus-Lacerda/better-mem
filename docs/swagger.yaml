@@ -70,6 +70,11 @@ definitions:
           or simply "user and assistant"
         type: string
     type: object
+  core.NewChat:
+    properties:
+      external_id:
+        type: string
+    type: object
   core.NewMessage:
     properties:
       chat_id:
@@ -158,8 +163,8 @@ paths:
             items:
               $ref: '#/definitions/core.Chat'
             type: array
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           schema:
             type: string
         "500":
@@ -179,7 +184,7 @@ paths:
         name: chat
         required: true
         schema:
-          $ref: '#/definitions/core.Chat'
+          $ref: '#/definitions/core.NewChat'
       produces:
       - application/json
       responses:
