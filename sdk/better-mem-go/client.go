@@ -1,4 +1,4 @@
-package main
+package better_mem
 
 import (
 	"bytes"
@@ -12,7 +12,6 @@ import (
 
 // TODO: Add oauth
 type BetterMemClient struct {
-	config     MemoryFetchConfig
 	baseUrl    string
 	httpClient *http.Client
 }
