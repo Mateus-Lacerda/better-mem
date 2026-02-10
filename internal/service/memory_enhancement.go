@@ -1,7 +1,7 @@
 package service
 
 import (
-	"better-mem/internal/llm"
+	"github.com/Mateus-Lacerda/better-mem/internal/llm"
 	"fmt"
 	"log/slog"
 )

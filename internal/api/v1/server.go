@@ -3,10 +3,10 @@
 package v1
 
 import (
-	"better-mem/internal/database/mongo/repository"
-	vectorRepo "better-mem/internal/database/qdrant/repository"
-	contracts "better-mem/internal/repository"
-	vectorContracts "better-mem/internal/repository/vector"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo/repository"
+	vectorRepo "github.com/Mateus-Lacerda/better-mem/internal/database/qdrant/repository"
+	contracts "github.com/Mateus-Lacerda/better-mem/internal/repository"
+	vectorContracts "github.com/Mateus-Lacerda/better-mem/internal/repository/vector"
 )
 
 func getRepositories() (

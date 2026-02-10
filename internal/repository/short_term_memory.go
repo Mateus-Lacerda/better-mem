@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"better-mem/internal/core"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
 	"context"
 	"time"
 )

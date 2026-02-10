@@ -1,0 +1,27 @@
+version: '3'
+
+vars:
+  BINARY_DIR: ./bin
+
+tasks:
+  default:
+    desc: "Starts the services"
+    deps: [build-go]
+    cmds:
+      - task: run-services
+
+  build-go:
+    desc: "Compiles the go binaries"
+    generates:
+      - "{{.BINARY_DIR}}/api"
+      - "{{.BINARY_DIR}}/worker"
+    cmds:
+      - go build -tags=local -o {{.BINARY_DIR}}/api ./cmd/api
+      - go build -tags=local -o {{.BINARY_DIR}}/worker ./cmd/worker
+
+  run-services:
+    desc: "Runs the Go binaries and the Python server"
+    cmds:
+      - "{{.BINARY_DIR}}/api &"
+      - "{{.BINARY_DIR}}/worker &"
+      - cd inference && uv run main.py

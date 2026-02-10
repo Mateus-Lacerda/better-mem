@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"better-mem/internal/core"
-	sqlite "better-mem/internal/database/sqlite"
-	"better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	sqlite "github.com/Mateus-Lacerda/better-mem/internal/database/sqlite"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
 	"context"
 	"log/slog"
 	"time"

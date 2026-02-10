@@ -1,10 +1,10 @@
 package main
 
 import (
-	"better-mem/internal/config"
-	"better-mem/internal/llm/ollama"
-	"better-mem/internal/service"
-	"better-mem/internal/task/handler"
+	"github.com/Mateus-Lacerda/better-mem/internal/config"
+	"github.com/Mateus-Lacerda/better-mem/internal/llm/ollama"
+	"github.com/Mateus-Lacerda/better-mem/internal/service"
+	"github.com/Mateus-Lacerda/better-mem/internal/task/handler"
 	"fmt"
 	"log/slog"
 	"os"

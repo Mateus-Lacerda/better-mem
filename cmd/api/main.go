@@ -1,8 +1,8 @@
 package main
 
 import (
-	docs "better-mem/docs"
-	v1 "better-mem/internal/api/v1"
+	docs "github.com/Mateus-Lacerda/better-mem/docs"
+	v1 "github.com/Mateus-Lacerda/better-mem/internal/api/v1"
 	"log/slog"
 
 	"github.com/gin-gonic/gin"

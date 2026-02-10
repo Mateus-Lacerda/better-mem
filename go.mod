@@ -1,6 +1,6 @@
-module better-mem
+module github.com/Mateus-Lacerda/better-mem
 
-go 1.25.1
+go 1.25.7
 
 require (
 	github.com/asg017/sqlite-vec-go-bindings v0.1.6
@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hibiken/asynq v0.25.1
 	github.com/khepin/liteq v0.1.1
+	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/qdrant/go-client v1.15.2
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
@@ -23,10 +24,6 @@ require (
 	github.com/alitto/pond v1.8.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/mattn/go-sqlite3 v1.14.33 // indirect
-	github.com/ncruces/go-sqlite3 v0.30.5 // indirect
-	github.com/ncruces/julianday v1.0.0 // indirect
-	github.com/tetratelabs/wazero v1.11.0 // indirect
 	github.com/tidwall/gjson v1.14.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect

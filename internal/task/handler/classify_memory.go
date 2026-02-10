@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"better-mem/internal/config"
-	"better-mem/internal/core"
-	protos "better-mem/internal/grpc_client"
-	"better-mem/internal/service"
-	"better-mem/internal/task"
+	"github.com/Mateus-Lacerda/better-mem/internal/config"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	protos "github.com/Mateus-Lacerda/better-mem/internal/grpc_client"
+	"github.com/Mateus-Lacerda/better-mem/internal/service"
+	"github.com/Mateus-Lacerda/better-mem/internal/task"
 	"context"
 	"encoding/json"
 	"log/slog"

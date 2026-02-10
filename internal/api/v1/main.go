@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"better-mem/internal/service"
+	"github.com/Mateus-Lacerda/better-mem/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

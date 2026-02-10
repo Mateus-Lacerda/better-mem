@@ -1,7 +1,7 @@
 package ollama
 
 import (
-	"better-mem/internal/llm"
+	"github.com/Mateus-Lacerda/better-mem/internal/llm"
 	"bytes"
 	"encoding/json"
 	"io"

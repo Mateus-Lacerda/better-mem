@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"better-mem/internal/core"
-	"better-mem/internal/database/mongo"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo"
 	"errors"
 	"time"
 

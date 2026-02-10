@@ -1,13 +1,13 @@
 package repository
 
 import (
-	"better-mem/internal/core"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
 	"context"
 	"errors"
 	"log/slog"
 
-	"better-mem/internal/database/sqlite"
-	"better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/sqlite"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
 
 	"gorm.io/gorm"
 )

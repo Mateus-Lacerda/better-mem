@@ -3,8 +3,8 @@
 package handler
 
 import (
-	"better-mem/internal/database/sqlite"
-	"better-mem/internal/task"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/sqlite"
+	"github.com/Mateus-Lacerda/better-mem/internal/task"
 	"context"
 	"encoding/json"
 

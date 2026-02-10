@@ -1,7 +1,7 @@
 package sqlite
 
 import (
-	"better-mem/internal/config"
+	"github.com/Mateus-Lacerda/better-mem/internal/config"
 	"fmt"
 	"time"
 

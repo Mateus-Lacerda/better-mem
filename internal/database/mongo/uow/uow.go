@@ -1,10 +1,10 @@
 package uow
 
 import (
-	"better-mem/internal/database/mongo"
-	mongoRepository "better-mem/internal/database/mongo/repository"
-	"better-mem/internal/repository"
-	"better-mem/internal/uow"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo"
+	mongoRepository "github.com/Mateus-Lacerda/better-mem/internal/database/mongo/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/uow"
 	"context"
 
 	mongoClient "go.mongodb.org/mongo-driver/mongo"

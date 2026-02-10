@@ -2,7 +2,7 @@
 
 package main
 
-import "better-mem/internal/database/sqlite"
+import "github.com/Mateus-Lacerda/better-mem/internal/database/sqlite"
 
 func setup() error {
 	sqlite.InitDb()

@@ -3,8 +3,8 @@
 package main
 
 import (
-	"better-mem/internal/database/mongo"
-	"better-mem/internal/database/qdrant"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/qdrant"
 	"log/slog"
 )
 

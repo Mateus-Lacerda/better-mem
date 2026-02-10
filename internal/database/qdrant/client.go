@@ -1,7 +1,7 @@
 package qdrant
 
 import (
-	"better-mem/internal/config"
+	"github.com/Mateus-Lacerda/better-mem/internal/config"
 	"context"
 	"log/slog"
 	"sync"

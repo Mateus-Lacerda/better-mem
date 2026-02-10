@@ -3,8 +3,8 @@
 package handler
 
 import (
-	"better-mem/internal/config"
-	"better-mem/internal/task"
+	"github.com/Mateus-Lacerda/better-mem/internal/config"
+	"github.com/Mateus-Lacerda/better-mem/internal/task"
 	"context"
 	"encoding/json"
 

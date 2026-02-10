@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"better-mem/internal/core"
-	"better-mem/internal/service"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	"github.com/Mateus-Lacerda/better-mem/internal/service"
 	"log/slog"
 	"net/http"
 	"strconv"

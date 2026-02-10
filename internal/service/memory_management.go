@@ -1,9 +1,9 @@
 package service
 
 import (
-	"better-mem/internal/core"
-	"better-mem/internal/repository"
-	"better-mem/internal/uow"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/uow"
 	"context"
 	"time"
 )

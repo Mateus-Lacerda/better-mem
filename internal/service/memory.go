@@ -1,10 +1,10 @@
 package service
 
 import (
-	"better-mem/internal/core"
-	protos "better-mem/internal/grpc_client"
-	"better-mem/internal/repository"
-	"better-mem/internal/repository/vector"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	protos "github.com/Mateus-Lacerda/better-mem/internal/grpc_client"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository/vector"
 	"context"
 	"log/slog"
 	"sort"

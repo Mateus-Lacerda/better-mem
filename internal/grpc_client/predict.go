@@ -1,8 +1,8 @@
 package protos
 
 import (
-	"better-mem/internal/config"
-	"better-mem/internal/core"
+	"github.com/Mateus-Lacerda/better-mem/internal/config"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
 	"context"
 	"log/slog"
 	"sync"

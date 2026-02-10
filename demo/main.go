@@ -1,7 +1,7 @@
 package main
 
 import (
-	demo "better-mem/demo/src"
+	demo "github.com/Mateus-Lacerda/better-mem/demo/src"
 	"fmt"
 	"log"
 	"os"

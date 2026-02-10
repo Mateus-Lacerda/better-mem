@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"better-mem/internal/core"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
 )
 
 type ChatRepository interface {

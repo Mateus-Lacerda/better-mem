@@ -3,8 +3,8 @@
 package task
 
 import (
-	"better-mem/internal/core"
-	"better-mem/internal/database/sqlite"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/sqlite"
 	"context"
 
 	"github.com/khepin/liteq"

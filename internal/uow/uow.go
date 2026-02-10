@@ -1,7 +1,7 @@
 package uow
 
 import (
-	"better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
 	"context"
 )
 

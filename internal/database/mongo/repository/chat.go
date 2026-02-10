@@ -1,12 +1,12 @@
 package repository
 
 import (
-	"better-mem/internal/core"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
 	"context"
 	"log/slog"
 
-	"better-mem/internal/database/mongo"
-	"better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
 
 	"go.mongodb.org/mongo-driver/bson"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"

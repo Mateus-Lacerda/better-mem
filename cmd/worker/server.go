@@ -3,18 +3,18 @@
 package main
 
 import (
-	"better-mem/internal/config"
-	"better-mem/internal/task"
-	"better-mem/internal/task/handler"
+	"github.com/Mateus-Lacerda/better-mem/internal/config"
+	"github.com/Mateus-Lacerda/better-mem/internal/task"
+	"github.com/Mateus-Lacerda/better-mem/internal/task/handler"
 	"log/slog"
 
-	"better-mem/internal/database/mongo"
-	"better-mem/internal/database/mongo/repository"
-	"better-mem/internal/database/mongo/uow"
-	vectorRepo "better-mem/internal/database/qdrant/repository"
-	contracts "better-mem/internal/repository"
-	vectorContracts "better-mem/internal/repository/vector"
-	uowContracts "better-mem/internal/uow"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/database/mongo/uow"
+	vectorRepo "github.com/Mateus-Lacerda/better-mem/internal/database/qdrant/repository"
+	contracts "github.com/Mateus-Lacerda/better-mem/internal/repository"
+	vectorContracts "github.com/Mateus-Lacerda/better-mem/internal/repository/vector"
+	uowContracts "github.com/Mateus-Lacerda/better-mem/internal/uow"
 
 	"github.com/hibiken/asynq"
 )

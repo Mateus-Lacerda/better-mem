@@ -1,6 +1,6 @@
 package model
 
-import "better-mem/internal/core"
+import "github.com/Mateus-Lacerda/better-mem/pkg/core"
 
 type MemoryPayload struct {
 	MemoryType core.MemoryTypeEnum `json:"memory_type"`

@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"better-mem/internal/core"
-	"better-mem/internal/repository/vector"
+	"github.com/Mateus-Lacerda/better-mem/pkg/core"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository/vector"
 )
 
 

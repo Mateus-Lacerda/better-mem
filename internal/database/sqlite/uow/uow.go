@@ -1,9 +1,9 @@
 package uow
 
 import (
-	sqliteRepository "better-mem/internal/database/sqlite/repository"
-	"better-mem/internal/repository"
-	"better-mem/internal/uow"
+	sqliteRepository "github.com/Mateus-Lacerda/better-mem/internal/database/sqlite/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/repository"
+	"github.com/Mateus-Lacerda/better-mem/internal/uow"
 	"context"
 
 	"gorm.io/gorm"
