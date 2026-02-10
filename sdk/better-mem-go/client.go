@@ -16,6 +16,13 @@ type BetterMemClient struct {
 	httpClient *http.Client
 }
 
+func NewBetterMemClient(baseUrl string) *BetterMemClient {
+	return &BetterMemClient{
+		baseUrl:    baseUrl,
+		httpClient: &http.Client{},
+	}
+}
+
 func (c *BetterMemClient) CreateChat(externalId string) error {
 	req := core.NewChat{ExternalId: externalId}
 	body, err := json.Marshal(req)
