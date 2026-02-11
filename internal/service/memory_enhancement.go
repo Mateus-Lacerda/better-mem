@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/Mateus-Lacerda/better-mem/internal/llm"
 	"fmt"
+	"github.com/Mateus-Lacerda/better-mem/internal/llm"
 	"log/slog"
 )
 
@@ -12,6 +12,10 @@ type MemoryEnhancementService struct {
 
 func NewMemoryEnhancementService(llmProvider llm.LLMProvider) *MemoryEnhancementService {
 	return &MemoryEnhancementService{llmProvider: llmProvider}
+}
+
+func (m MemoryEnhancementService) IsWorking() bool {
+	return m.llmProvider != nil
 }
 
 func (m MemoryEnhancementService) EnhanceMemory(memory string) string {

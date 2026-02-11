@@ -64,7 +64,7 @@ func (h *MessageTaskHandler) handleClassifyMemoryTask(
 	enqueueFunc func(string, []byte) error,
 ) error {
 	slog.Info("handleClassifyMemoryTask", "payload", payload)
-	hasEnhancementCapabilites := h.memoryEnhancementService != nil
+	hasEnhancementCapabilites := h.memoryEnhancementService.IsWorking()
 
 	labeledMessage, err := protos.Predict(payload.Message, payload.ChatId, !hasEnhancementCapabilites)
 	if err != nil {
