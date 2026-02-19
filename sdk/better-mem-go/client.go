@@ -75,14 +75,14 @@ func (c *BetterMemClient) SendMessage(
 	}
 
 	resp, err := send()
+	if err != nil {
+		return err
+	}
 	if resp.StatusCode == http.StatusBadRequest {
 		c.CreateChat(chatId)
 		resp, err = send()
 	}
 
-	if err != nil {
-		return err
-	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
